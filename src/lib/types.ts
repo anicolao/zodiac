@@ -27,6 +27,17 @@ export interface GameSession {
   output?: Blob;
 }
 
+export interface GameHistoryEntry {
+  schemaVersion: 1;
+  id: string;
+  createdAt: string;
+  completedAt: string;
+  cardLabels: string[];
+  goldCount: number;
+  redCount: number;
+  output: Blob;
+}
+
 export function newSession(): GameSession {
   const now = new Date().toISOString();
   return {

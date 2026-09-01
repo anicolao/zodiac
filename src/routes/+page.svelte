@@ -1,12 +1,19 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { analyzePhotograph } from '$lib/analyze';
-  import { clearSession, loadSession, requestPersistentStorage, saveSession } from '$lib/persistence';
+  import {
+    clearSession,
+    loadHistory,
+    loadSession,
+    requestPersistentStorage,
+    saveCompletedSession,
+    saveSession
+  } from '$lib/persistence';
   import { renderZodiac } from '$lib/render';
   import { saveZodiac, shareZodiac } from '$lib/share';
-  import { newSession, type DetectedStar, type GameSession } from '$lib/types';
+  import { newSession, type DetectedStar, type GameHistoryEntry, type GameSession } from '$lib/types';
 
-  type Stage = 'loading' | 'welcome' | 'capture' | 'processing' | 'confirm' | 'review' | 'generating' | 'result';
+  type Stage = 'loading' | 'welcome' | 'capture' | 'processing' | 'confirm' | 'review' | 'generating' | 'result' | 'history' | 'history-result';
   interface PendingCapture {
     image: Blob;
     preview: string;
@@ -18,6 +25,9 @@
   let session: GameSession | undefined;
   let pending: PendingCapture | undefined;
   let previews: Record<string, string> = {};
+  let history: GameHistoryEntry[] = [];
+  let historyPreviews: Record<string, string> = {};
+  let historySelection: GameHistoryEntry | undefined;
   let resultUrl = '';
   let message = '';
   let errorMessage = '';
@@ -29,19 +39,30 @@
   $: pendingRed = pending?.stars.filter((star) => star.color === 'red').length ?? 0;
 
   onMount(() => {
-    void loadSession().catch(() => undefined).then((restored) => {
-      session = restored;
-      if (session) {
-        hydratePreviews(session);
-        if (session.output) {
-          resultUrl = URL.createObjectURL(session.output);
-          stage = 'result';
-        } else if (session.captures.length === 6) stage = 'review';
-        else stage = 'welcome';
-      } else stage = 'welcome';
-    });
+    void Promise.all([loadSession().catch(() => undefined), loadHistory().catch(() => [])]).then(
+      async ([restored, savedHistory]) => {
+        if (restored?.output && !savedHistory.some((entry) => entry.id === restored.id)) {
+          try {
+            const migrated = await saveCompletedSession(restored, restored.updatedAt);
+            savedHistory = [migrated, ...savedHistory];
+          } catch {}
+        }
+        history = savedHistory;
+        hydrateHistoryPreviews(history);
+        session = restored;
+        if (session) {
+          hydratePreviews(session);
+          if (session.output) {
+            resultUrl = URL.createObjectURL(session.output);
+            stage = 'result';
+          } else if (session.captures.length === 6) stage = 'review';
+          else stage = 'welcome';
+        } else stage = 'welcome';
+      }
+    );
     return () => {
       Object.values(previews).forEach(URL.revokeObjectURL);
+      Object.values(historyPreviews).forEach(URL.revokeObjectURL);
       if (pending) URL.revokeObjectURL(pending.preview);
       if (resultUrl) URL.revokeObjectURL(resultUrl);
     };
@@ -50,6 +71,13 @@
   function hydratePreviews(value: GameSession) {
     Object.values(previews).forEach(URL.revokeObjectURL);
     previews = Object.fromEntries(value.captures.map((capture) => [capture.id, URL.createObjectURL(capture.image)]));
+  }
+
+  function hydrateHistoryPreviews(entries: GameHistoryEntry[]) {
+    Object.values(historyPreviews).forEach(URL.revokeObjectURL);
+    historyPreviews = Object.fromEntries(
+      entries.map((entry) => [entry.id, URL.createObjectURL(entry.output)])
+    );
   }
 
   async function startGame() {
@@ -166,7 +194,11 @@
       const output = await renderZodiac(session);
       session.output = output;
       session.status = 'complete';
-      await saveSession(session);
+      const archived = await saveCompletedSession(session);
+      const previousHistoryUrl = historyPreviews[archived.id];
+      if (previousHistoryUrl) URL.revokeObjectURL(previousHistoryUrl);
+      history = [archived, ...history.filter((entry) => entry.id !== archived.id)];
+      historyPreviews = { ...historyPreviews, [archived.id]: URL.createObjectURL(output) };
       if (resultUrl) URL.revokeObjectURL(resultUrl);
       resultUrl = URL.createObjectURL(output);
       session = { ...session };
@@ -177,14 +209,19 @@
     }
   }
 
-  async function share() {
-    if (!session?.output) return;
-    const outcome = await shareZodiac(session.output);
+  async function shareOutput(output: Blob) {
+    const outcome = await shareZodiac(output);
     message = outcome === 'shared' ? 'Your Zodiac is ready to share.' : outcome === 'saved' ? 'Your Zodiac was saved.' : '';
   }
 
+  function openHistoryEntry(entry: GameHistoryEntry) {
+    historySelection = entry;
+    message = '';
+    stage = 'history-result';
+  }
+
   async function startAnother() {
-    if (!confirm('Start another game? This removes the current photos and Zodiac from this device.')) return;
+    if (!confirm('Start another game? Your completed Zodiac will stay in Game history.')) return;
     await clearSession();
     Object.values(previews).forEach(URL.revokeObjectURL);
     previews = {};
@@ -192,6 +229,7 @@
     resultUrl = '';
     session = undefined;
     pending = undefined;
+    historySelection = undefined;
     message = '';
     stage = 'welcome';
   }
@@ -224,10 +262,67 @@
       <button class="primary" onclick={startGame}>
         {session?.captures.length ? `Resume game · ${session.captures.length} of 6` : 'Start a game'}
       </button>
+      {#if history.length}
+        <button class="secondary" onclick={() => (stage = 'history')}>Game history · {history.length}</button>
+      {/if}
       <details class="install-help">
         <summary>Add Zodiac to your Home Screen</summary>
         <p>In Safari, tap Share, then Add to Home Screen for a full-screen game companion.</p>
       </details>
+    </section>
+  {:else if stage === 'history'}
+    <section class="history-screen">
+      <header>
+        <button class="text-button" onclick={() => (stage = session?.output ? 'result' : 'welcome')}>Back</button>
+        <div>
+          <p class="eyebrow">Saved on this device</p>
+          <h1>Game history</h1>
+        </div>
+        <span class="counter">{history.length}</span>
+      </header>
+      <p class="history-intro">Completed Zodiacs stay here so you can open, save, or share them again.</p>
+      <ul class="history-list">
+        {#each history as entry}
+          <li>
+            <button
+              class="history-card"
+              aria-label={`Open Zodiac from ${new Intl.DateTimeFormat('en-CA', { dateStyle: 'long' }).format(new Date(entry.completedAt))}`}
+              onclick={() => openHistoryEntry(entry)}
+            >
+              <img src={historyPreviews[entry.id]} alt="" />
+              <span class="history-copy">
+                <strong>{new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium' }).format(new Date(entry.completedAt))}</strong>
+                <span>{entry.cardLabels.join(' · ')}</span>
+                <small>{entry.goldCount + entry.redCount} stars · {entry.goldCount} gold · {entry.redCount} red</small>
+              </span>
+              <span class="history-arrow" aria-hidden="true">›</span>
+            </button>
+          </li>
+        {/each}
+      </ul>
+    </section>
+  {:else if stage === 'history-result' && historySelection}
+    <section class="result-screen history-result-screen">
+      <header class="history-result-header">
+        <button class="text-button" onclick={() => (stage = 'history')}>Back</button>
+        <div>
+          <p class="eyebrow">From game history</p>
+          <h1>Saved Zodiac</h1>
+        </div>
+        <time datetime={historySelection.completedAt}>{new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium' }).format(new Date(historySelection.completedAt))}</time>
+      </header>
+      <img
+        class="result-image"
+        src={historyPreviews[historySelection.id]}
+        alt={`Saved Zodiac with six constellations, ${historySelection.goldCount} gold stars, and ${historySelection.redCount} red stars`}
+      />
+      <p class="result-summary">{historySelection.cardLabels.join(' · ')}</p>
+      <p class="result-summary">Six constellations · {historySelection.goldCount + historySelection.redCount} stars · saved locally</p>
+      {#if message}<p class="success" role="status">{message}</p>{/if}
+      <div class="result-actions">
+        <button class="primary" onclick={() => shareOutput(historySelection!.output)}>Share again</button>
+        <button class="secondary" onclick={() => saveZodiac(historySelection!.output)}>Save image</button>
+      </div>
     </section>
   {:else if stage === 'capture'}
     <section class="capture-screen">
@@ -362,8 +457,9 @@
       <p class="result-summary">Six constellations · {goldCount + redCount} stars · rendered privately on this device</p>
       {#if message}<p class="success" role="status">{message}</p>{/if}
       <div class="result-actions">
-        <button class="primary" onclick={share}>Share</button>
+        <button class="primary" onclick={() => shareOutput(session!.output!)}>Share</button>
         <button class="secondary" onclick={() => saveZodiac(session!.output!)}>Save image</button>
+        <button class="secondary" onclick={() => (stage = 'history')}>Game history · {history.length}</button>
         <button class="text-button restart" onclick={startAnother}>Start another</button>
       </div>
     </section>
@@ -377,7 +473,7 @@
   :global(button), :global(input) { font: inherit; }
   :global(button), :global(label.shutter), :global(summary) { -webkit-tap-highlight-color: transparent; }
   :global(button:focus-visible), :global(input:focus-visible), :global(summary:focus-visible), :global(label.shutter:focus-within) { outline: 3px solid #fff7e7; outline-offset: 3px; }
-  main { position: relative; width: min(100%, 540px); min-height: 100dvh; margin: 0 auto; overflow: hidden; background: radial-gradient(circle at 50% 16%, #0b2a49 0, #031426 48%, #010a14 100%); padding: max(22px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); }
+  main { position: relative; width: min(100%, 540px); min-height: 100dvh; margin: 0 auto; overflow-x: hidden; background: radial-gradient(circle at 50% 16%, #0b2a49 0, #031426 48%, #010a14 100%); padding: max(22px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); }
   main::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .36; background-image: radial-gradient(circle, #fff 0 1px, transparent 1.5px), radial-gradient(circle, #f3b83f 0 1px, transparent 1.5px); background-position: 17px 31px, 81px 119px; background-size: 97px 103px, 151px 167px; mask-image: linear-gradient(#000, transparent 70%); }
   section { position: relative; z-index: 1; min-height: calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
   h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-weight: 500; color: #f7c451; letter-spacing: -.02em; }
@@ -403,7 +499,7 @@
   .install-help { color: #cbd6e3; font-size: .82rem; }
   .install-help summary { min-height: 44px; cursor: pointer; color: #f7c451; }
   .install-help p { margin: 4px 20px 0; }
-  .capture-screen, .confirm-screen, .review-screen, .result-screen { display: flex; flex-direction: column; gap: 16px; }
+  .capture-screen, .confirm-screen, .review-screen, .result-screen, .history-screen { display: flex; flex-direction: column; gap: 16px; }
   header, .simple-header { display: grid; grid-template-columns: 52px 1fr 52px; align-items: start; gap: 8px; }
   header > div { text-align: center; }
   header h1 { font-size: 1.45rem; }
@@ -436,7 +532,17 @@
   .hint { background:#f3b83f18; color:#f6dcaa; } .error { background:#9b241f88; color:#fff; } .success { background:#1d704f77; text-align:center; }
   .simple-header { grid-template-columns:1fr auto; }
   .simple-header > div { text-align:left; } .simple-header h1 { font-size:1.9rem; }
-  .simple-header time { color:#d7deea; font-size:.8rem; }
+  .simple-header time, .history-result-header time { color:#d7deea; font-size:.8rem; }
+  .history-result-header { grid-template-columns:52px 1fr auto; }
+  .history-intro { margin:0; color:#cbd6e3; text-align:center; font-size:.88rem; }
+  .history-list { display:grid; gap:12px; margin:0; padding:0; list-style:none; }
+  .history-card { display:grid; grid-template-columns:92px minmax(0,1fr) 24px; align-items:center; width:100%; min-height:108px; overflow:hidden; padding:0; border:1px solid #f3b83f66; border-radius:16px; background:#06192be8; text-align:left; cursor:pointer; }
+  .history-card img { width:92px; height:108px; object-fit:cover; }
+  .history-copy { display:grid; min-width:0; gap:6px; padding:10px 12px; }
+  .history-copy strong { color:#f7c451; font-family:Georgia,serif; font-size:1rem; }
+  .history-copy > span { overflow:hidden; color:#fff7e7; font-size:.72rem; text-overflow:ellipsis; white-space:nowrap; }
+  .history-copy small { color:#b9c6d4; font-size:.7rem; }
+  .history-arrow { color:#f7c451; font-size:1.8rem; }
   .totals { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
   .totals div { display:grid; justify-items:center; gap:3px; padding:12px 4px; border:1px solid #f3b83f44; border-radius:14px; background:#06192bbf; }
   .totals strong { font-family:Georgia,serif; font-size:1.65rem; } .totals span { font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; }

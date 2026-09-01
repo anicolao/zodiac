@@ -69,11 +69,12 @@ Never manually manage counters, screenshot names, or duplicate verification pros
 
 ## 6. Required coverage
 
-- one full six-card game from Start through Share;
+- one full six-card game from Start through Share, active-session clearing, Game history recovery, and Share again;
 - photo-derived card names and exact red/gold counts;
 - visibly distinct token sizes and 2048×2048 output;
 - no external network request during recognition or rendering;
 - result restoration from IndexedDB after reload;
+- one compact completed-game history record that retains the PNG and summary without source photos;
 - manifest, phone/desktop hierarchy, reduced motion, and 44-pixel controls;
 - service-worker offline reload followed by uncached-in-memory OCR of a fixture.
 
@@ -86,4 +87,3 @@ npx playwright test tests/e2e/001-complete-zodiac --project=phone
 ```
 
 Run `npm run check`, `npm run build`, and `npm run test:unit` before the E2E suite. Snapshot updates are not a fix for a failing assertion.
-

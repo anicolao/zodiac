@@ -13,8 +13,9 @@ Zodiac turns the end state of a tabletop game into a personal constellation char
 3. Confirm the card name and the stars Zodiac found; correct mistakes if needed.
 4. Review the six captures and generate the chart.
 5. Share the resulting PNG through the iOS share sheet or save it.
+6. Reopen any completed game from local Game history and share it again later.
 
-The proposed MVP is local-first. Photos, recognition results, and the finished chart remain on the device unless the user explicitly shares them. Chart creation is deterministic canvas rendering, not generative AI, so the output accurately reflects the pieces in the photographs and works offline after the app shell has been cached.
+The proposed MVP is local-first. Photos, recognition results, and finished charts remain on the device unless the user explicitly shares them. Chart creation is deterministic canvas rendering, not generative AI, so the output accurately reflects the pieces in the photographs and works offline after the app shell has been cached.
 
 ## Product documents
 
@@ -37,7 +38,7 @@ The proposed MVP is local-first. Photos, recognition results, and the finished c
 - TypeScript for domain and image-processing code
 - Local Tesseract OCR for reading the printed card name directly from each photograph
 - Canvas 2D for metadata-stripping normalization, token detection, analysis overlays, and final 2048×2048 PNG rendering
-- IndexedDB for the active session and sanitized image blobs
+- IndexedDB for the active session, sanitized image blobs, and a local completed-game history
 - Web App Manifest plus a SvelteKit service worker for Home Screen/standalone presentation and offline app-shell caching
 - a system camera/photo input with `capture="environment"`, which opens the rear-camera path on supporting iPhones and remains compatible with the photo picker
 - Web Share API file sharing, feature-detected with a save/download fallback
@@ -68,7 +69,7 @@ npm run test:unit
 npm run test:e2e
 ```
 
-The Playwright suite uses six AI-generated, photorealistic gameplay fixtures in `tests/e2e/fixtures/`. It performs a complete start-to-share run, validates the 2048×2048 output, reload recovery, phone/desktop presentation, manifest metadata, touch targets, and offline OCR. See [E2E_GUIDE.md](E2E_GUIDE.md) before changing UI or tests.
+The Playwright suite uses six AI-generated, photorealistic gameplay fixtures in `tests/e2e/fixtures/`. It performs a complete start-to-share-and-reshare run, validates the 2048×2048 output, completed-game history, reload recovery, phone/desktop presentation, manifest metadata, touch targets, and offline OCR. See [E2E_GUIDE.md](E2E_GUIDE.md) before changing UI or tests.
 
 ## Deployment previews
 
