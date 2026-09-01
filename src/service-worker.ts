@@ -4,7 +4,8 @@ import { build, files, version } from '$service-worker';
 
 const worker = globalThis as unknown as ServiceWorkerGlobalScope;
 const cacheName = `zodiac-${version}`;
-const assets = [...build, ...files, '/'];
+const appRoot = new URL('./', worker.location.href).pathname;
+const assets = [...build, ...files, appRoot];
 
 worker.addEventListener('install', (event) => {
   event.waitUntil(caches.open(cacheName).then((cache) => cache.addAll(assets)));
@@ -34,7 +35,7 @@ worker.addEventListener('fetch', (event) => {
         }
         return response;
       } catch (error) {
-        const fallback = await caches.match('/');
+        const fallback = await caches.match(appRoot);
         if (fallback && event.request.mode === 'navigate') return fallback;
         throw error;
       }

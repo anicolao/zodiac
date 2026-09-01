@@ -70,6 +70,10 @@ npm run test:e2e
 
 The Playwright suite uses six AI-generated, photorealistic gameplay fixtures in `tests/e2e/fixtures/`. It performs a complete start-to-share run, validates the 2048×2048 output, reload recovery, phone/desktop presentation, manifest metadata, touch targets, and offline OCR. See [E2E_GUIDE.md](E2E_GUIDE.md) before changing UI or tests.
 
+## Deployment previews
+
+Every pull request is verified and deployed to a retained GitHub Pages directory at `https://anicolao.github.io/zodiac/pr<PR number>/`. The workflow creates or updates one comment on the pull request with its exact preview URL. A merge to `main` publishes the production build at `https://anicolao.github.io/zodiac/` while retaining existing PR previews.
+
 ## Technical references
 
 - [SvelteKit service workers](https://svelte.dev/docs/kit/service-workers)

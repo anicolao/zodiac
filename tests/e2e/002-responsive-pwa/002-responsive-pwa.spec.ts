@@ -15,6 +15,8 @@ test('the installable shell is responsive and accessible', async ({ page }, test
   expect(manifestResponse.ok()).toBe(true);
   expect(await manifestResponse.json()).toMatchObject({
     name: 'Zodiac — A game becomes a constellation',
+    start_url: './',
+    scope: './',
     display: 'standalone',
     theme_color: '#031426'
   });

@@ -63,6 +63,8 @@ No backend, user account, analytics SDK, CDN runtime dependency, cloud OCR, or i
 - [x] Complete six-fixture start-to-share test with no external requests.
 - [x] IndexedDB reload recovery test.
 - [x] Offline service-worker/OCR test.
+- [x] Retained GitHub Pages preview for each PR with a bot-authored review link.
+- [x] Base-path-safe manifest, OCR assets, and service-worker scope for preview and production URLs.
 - [ ] Real iPhone Safari and Home Screen smoke test by the reviewer.
 - [ ] Share-sheet test on a physical iPhone.
 - [ ] Warm/dim/angled real-game fixture expansion after first field use.

@@ -4,10 +4,12 @@ let workerPromise: Promise<Worker> | undefined;
 
 async function worker(): Promise<Worker> {
   if (!workerPromise) {
+    const manifestHref = document.querySelector<HTMLLinkElement>('link[rel="manifest"]')?.href;
+    const assetRoot = new URL('.', manifestHref ?? location.href).href.replace(/\/$/, '');
     workerPromise = createWorker('eng', 1, {
-      workerPath: `${location.origin}/ocr/worker.min.js`,
-      corePath: `${location.origin}/ocr/core/tesseract-core-lstm.wasm.js`,
-      langPath: `${location.origin}/ocr/lang`,
+      workerPath: `${assetRoot}/ocr/worker.min.js`,
+      corePath: `${assetRoot}/ocr/core/tesseract-core-lstm.wasm.js`,
+      langPath: `${assetRoot}/ocr/lang`,
       logger: () => undefined
     }).then(async (instance) => {
       await instance.setParameters({
