@@ -75,6 +75,8 @@ The Playwright suite uses six AI-generated, photorealistic gameplay fixtures in 
 
 Every pull request is verified and deployed to a retained GitHub Pages directory at `https://anicolao.github.io/zodiac/pr<PR number>/`. The workflow creates or updates one comment on the pull request with its exact preview URL. A merge to `main` publishes the production build at `https://anicolao.github.io/zodiac/` while retaining existing PR previews.
 
+Every screen also shows the running Git revision as a short `Build abc12345` marker. Zodiac checks a cache-busted `build.json` manifest against the full embedded revision: **Current** confirms an online match, **Offline** means the comparison came from the local cache, and **Update available** identifies a newer deployment. At a safe stopping point, **Update available · Refresh** activates the waiting service worker and reloads with its own cache-busting build URL; no hand-edited query string is required.
+
 ## Technical references
 
 - [SvelteKit service workers](https://svelte.dev/docs/kit/service-workers)

@@ -5,3 +5,5 @@ in terms of the open questions: MVP is for a 6-card game; card names must come f
 I don't see a preview lnk on the PR, look at the reference projects for how to do it an publish a gh pages link to see the PR
 
 this looks pretty good. A few things to fix: after completing a game, the zodiac should get saved into a game history so the user can recover and reshare old zodiacs. the actual zodiac image has the stars a bit crowded, they could be further out from the center so that htey have a bit more space in the finished zodiac, and perhaps be a bit smaller. Let's update with these changes.
+
+I need a way to tell what build is deployed - the git hash in small text or similar - as I don't see your changes on teh PR preview without a cache-busting URL. I do like teh app being offline first, but need to be able to tell if the user is out of date. let's put that up as a new PR

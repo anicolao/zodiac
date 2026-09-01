@@ -10,4 +10,5 @@ The browser and Home Screen entry point retain their hierarchy, manifest, touch 
 
 - [x] The Web App Manifest supplies standalone Home Screen metadata
 - [x] The main CTA has an accessible name and at least a 44-pixel target
+- [x] The running Git hash is visible and a newer deployed build is actionable
 - [x] Reduced motion eliminates the decorative pulse duration

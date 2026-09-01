@@ -11,3 +11,4 @@ After one online app load, the service worker supplies the complete app shell an
 - [x] The printed card name is recognized with the network disabled
 - [x] Four small gold and one larger red star are detected offline
 - [x] The normalized capture remains confirmable
+- [x] The visible build marker distinguishes an offline freshness state

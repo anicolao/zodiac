@@ -11,6 +11,7 @@ Six realistic gameplay photographs are read locally, confirmed, composed into th
 - [x] The app has a stable accessible title
 - [x] The promise and local-only privacy statement are visible
 - [x] The first action is touch-sized and named
+- [x] The exact tested build is visible and confirmed current
 
 ## CASTLE is read from its printed card and its sized tokens are found
 

@@ -56,6 +56,10 @@ No backend, user account, analytics SDK, CDN runtime dependency, cloud OCR, or i
 - [x] Cache the root shell, compiled application, and local OCR assets.
 - [x] Defer all photo/session content to IndexedDB rather than network caches.
 - [x] Prove offline reload and new-photo OCR after one online load.
+- [x] Embed and display the running Git revision on every screen.
+- [x] Publish a build manifest and check it with a cache-busted, network-first request.
+- [x] Distinguish an offline cached comparison from a confirmed current deployment.
+- [x] Offer a user-initiated service-worker refresh with an application-generated build URL at safe stopping points.
 
 ### 5. Verification and review — complete for PR 1
 
@@ -69,6 +73,7 @@ No backend, user account, analytics SDK, CDN runtime dependency, cloud OCR, or i
 - [x] Offline service-worker/OCR test.
 - [x] Retained GitHub Pages preview for each PR with a bot-authored review link.
 - [x] Base-path-safe manifest, OCR assets, and service-worker scope for preview and production URLs.
+- [x] E2E coverage for current, update-available, offline, and internally cache-busted refresh states.
 - [ ] Real iPhone Safari and Home Screen smoke test by the reviewer.
 - [ ] Share-sheet test on a physical iPhone.
 - [ ] Warm/dim/angled real-game fixture expansion after first field use.

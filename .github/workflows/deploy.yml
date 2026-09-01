@@ -57,6 +57,7 @@ jobs:
         env:
           NODE_ENV: production
           PUBLIC_BASE_PATH: ${{ steps.deployment.outputs.base }}
+          VITE_GIT_HASH: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Publish retained GitHub Pages build
         uses: peaceiris/actions-gh-pages@v4.1.0
