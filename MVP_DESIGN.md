@@ -223,7 +223,10 @@ The same session data must always generate the same chart for a given renderer v
 - Include iOS-compatible Home Screen icons and status-bar metadata.
 - Precache only the versioned application shell, local fonts, icons, and small renderer assets. Session photos belong in IndexedDB, not Cache Storage.
 - Allow an in-progress game to complete offline after the first successful application load.
-- Surface an update only between sessions. Never force a service-worker activation while a capture session is active.
+- Embed the full Git revision in the application and publish the same revision plus build time in a generated `build.json` manifest.
+- Keep a small short-hash build marker visible on every screen. Compare against `build.json` with a cache-busted, network-first request so a cached offline response is never presented as proof that the app is current.
+- Surface a detected update during an active game, but make refresh actionable only at a safe stopping point. Never force a service-worker activation while a capture step is active.
+- On an explicit refresh, request the new service worker and reload with an application-generated build query parameter so the user does not need to construct a cache-busting URL.
 - Show short contextual “Add to Home Screen” guidance in Safari, dismissible forever; do not block browser use.
 
 SvelteKit automatically bundles and registers `src/service-worker.*`, but production update behavior and cache invalidation still require explicit tests.
@@ -279,6 +282,8 @@ Create a `File` from the PNG blob, then call `navigator.canShare({ files: [file]
 - After one online load, a returning user can launch, capture, review, render, and reach a save path in airplane mode.
 - The Home Screen launch uses the intended icon, theme, safe areas, and standalone presentation.
 - A new deployment cannot discard or corrupt an active version-1 session.
+- The visible short revision identifies the running build in browser and Home Screen modes.
+- An online revision mismatch exposes a user-initiated update at a safe stopping point; an offline/cache-only comparison is labeled **Offline**, never **Current**.
 
 ### Accessibility and performance
 

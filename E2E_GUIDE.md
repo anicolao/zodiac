@@ -76,6 +76,8 @@ Never manually manage counters, screenshot names, or duplicate verification pros
 - result restoration from IndexedDB after reload;
 - one compact completed-game history record that retains the PNG and summary without source photos;
 - manifest, phone/desktop hierarchy, reduced motion, and 44-pixel controls;
+- visible running Git revision plus current, update-available, and offline freshness states;
+- update action that navigates to an application-generated cache-busting build URL;
 - service-worker offline reload followed by uncached-in-memory OCR of a fixture.
 
 ## 7. Commands

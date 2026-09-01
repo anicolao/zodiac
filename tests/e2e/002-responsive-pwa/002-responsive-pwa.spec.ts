@@ -8,6 +8,12 @@ test('the installable shell is responsive and accessible', async ({ page }, test
     'The browser and Home Screen entry point retain their hierarchy, manifest, touch targets, and reduced-motion behavior at phone and desktop widths.'
   );
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.route('**/build.json?check=*', (route) =>
+    route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ hash: 'newer-deployed-build', builtAt: '2026-09-01T12:00:00.000Z' })
+    })
+  );
   await page.goto('/');
   const manifestHref = await page.locator('link[rel="manifest"]').getAttribute('href');
   expect(new URL(manifestHref ?? '', page.url()).pathname).toBe('/manifest.webmanifest');
@@ -25,6 +31,10 @@ test('the installable shell is responsive and accessible', async ({ page }, test
     verifications: [
       { spec: 'The Web App Manifest supplies standalone Home Screen metadata', check: async () => expect(manifestResponse.ok()).toBe(true) },
       { spec: 'The main CTA has an accessible name and at least a 44-pixel target', check: async () => expect(page.getByRole('button', { name: /Start a game|Resume game/ })).toBeVisible() },
+      { spec: 'The running Git hash is visible and a newer deployed build is actionable', check: async () => {
+        await expect(page.getByTestId('build-marker')).toHaveText('Build e2e-test');
+        await expect(page.getByRole('button', { name: 'Update available · Refresh' })).toBeVisible();
+      } },
       { spec: 'Reduced motion eliminates the decorative pulse duration', check: async () => {
         await expect.poll(() => page.locator('.preview-star').first().evaluate((element) => {
           const duration = getComputedStyle(element).animationDuration;
@@ -33,5 +43,7 @@ test('the installable shell is responsive and accessible', async ({ page }, test
       } }
     ]
   });
+  await page.getByRole('button', { name: 'Update available · Refresh' }).click();
+  await expect(page).toHaveURL(/\?build=newer-de$/);
   steps.generateDocs();
 });

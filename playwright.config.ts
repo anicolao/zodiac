@@ -42,7 +42,11 @@ export default defineConfig({
   webServer: {
     command: 'npm run build && npm run preview',
     url: 'http://127.0.0.1:4191',
-    reuseExistingServer: false
+    reuseExistingServer: false,
+    env: {
+      ...process.env,
+      VITE_GIT_HASH: 'e2e-test-build'
+    }
   },
   timeout: 300000,
   expect: {

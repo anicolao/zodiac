@@ -2,6 +2,7 @@ node_modules/
 .svelte-kit/
 build/
 static/ocr/
+/static/build.json
 playwright-report/
 test-results/
 .DS_Store

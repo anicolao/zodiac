@@ -47,7 +47,11 @@ test('a complete six-card game becomes a shareable Zodiac', async ({ page }, tes
         await expect(page.getByText('A game becomes a constellation.')).toBeVisible();
         await expect(page.getByText(/Everything stays on this device/)).toBeVisible();
       } },
-      { spec: 'The first action is touch-sized and named', check: async () => expect(page.getByRole('button', { name: 'Start a game' })).toBeVisible() }
+      { spec: 'The first action is touch-sized and named', check: async () => expect(page.getByRole('button', { name: 'Start a game' })).toBeVisible() },
+      { spec: 'The exact tested build is visible and confirmed current', check: async () => {
+        await expect(page.getByTestId('build-marker')).toHaveText('Build e2e-test');
+        await expect(page.locator('.build-status')).toHaveAttribute('data-freshness', 'current');
+      } }
     ]
   });
 

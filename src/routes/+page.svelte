@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { analyzePhotograph } from '$lib/analyze';
+  import { BUILD_HASH, fetchDeployedBuild, isDifferentBuild, shortBuildHash } from '$lib/build';
   import {
     clearSession,
     loadHistory,
@@ -20,6 +21,7 @@
     cardLabel: string;
     stars: DetectedStar[];
   }
+  type BuildFreshness = 'checking' | 'current' | 'available' | 'offline' | 'unknown' | 'refreshing';
 
   let stage: Stage = 'loading';
   let session: GameSession | undefined;
@@ -32,13 +34,27 @@
   let message = '';
   let errorMessage = '';
   let fileInput: HTMLInputElement;
+  let buildFreshness: BuildFreshness = 'checking';
+  let deployedBuildHash = '';
 
   $: goldCount = session?.captures.flatMap((capture) => capture.stars).filter((star) => star.color === 'gold').length ?? 0;
   $: redCount = session?.captures.flatMap((capture) => capture.stars).filter((star) => star.color === 'red').length ?? 0;
   $: pendingGold = pending?.stars.filter((star) => star.color === 'gold').length ?? 0;
   $: pendingRed = pending?.stars.filter((star) => star.color === 'red').length ?? 0;
+  $: canRefreshBuild = stage === 'welcome' || stage === 'result' || stage === 'history' || stage === 'history-result';
 
   onMount(() => {
+    const handleOnline = () => void checkBuildFreshness();
+    const handleOffline = () => (buildFreshness = 'offline');
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') void checkBuildFreshness();
+    };
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    document.addEventListener('visibilitychange', handleVisibility);
+    const buildCheckTimer = window.setInterval(() => void checkBuildFreshness(), 5 * 60 * 1000);
+    void checkBuildFreshness();
+
     void Promise.all([loadSession().catch(() => undefined), loadHistory().catch(() => [])]).then(
       async ([restored, savedHistory]) => {
         if (restored?.output && !savedHistory.some((entry) => entry.id === restored.id)) {
@@ -61,12 +77,50 @@
       }
     );
     return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.clearInterval(buildCheckTimer);
       Object.values(previews).forEach(URL.revokeObjectURL);
       Object.values(historyPreviews).forEach(URL.revokeObjectURL);
       if (pending) URL.revokeObjectURL(pending.preview);
       if (resultUrl) URL.revokeObjectURL(resultUrl);
     };
   });
+
+  async function checkBuildFreshness() {
+    if (!navigator.onLine) {
+      buildFreshness = 'offline';
+      return;
+    }
+    try {
+      const deployed = await fetchDeployedBuild();
+      deployedBuildHash = deployed.hash;
+      buildFreshness = deployed.source === 'cache'
+        ? 'offline'
+        : isDifferentBuild(deployed.hash) ? 'available' : 'current';
+      if (buildFreshness === 'available' && 'serviceWorker' in navigator) {
+        void navigator.serviceWorker.getRegistration().then((registration) => registration?.update());
+      }
+    } catch {
+      buildFreshness = navigator.onLine ? 'unknown' : 'offline';
+    }
+  }
+
+  async function refreshToLatestBuild() {
+    if (!deployedBuildHash) return;
+    buildFreshness = 'refreshing';
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        await registration?.update();
+        registration?.waiting?.postMessage({ type: 'ACTIVATE_UPDATE' });
+      } catch {}
+    }
+    const target = new URL(location.href);
+    target.searchParams.set('build', shortBuildHash(deployedBuildHash));
+    location.replace(target);
+  }
 
   function hydratePreviews(value: GameSession) {
     Object.values(previews).forEach(URL.revokeObjectURL);
@@ -464,6 +518,27 @@
       </div>
     </section>
   {/if}
+  <footer class="build-status" data-freshness={buildFreshness} aria-live="polite">
+    <span data-testid="build-marker" title={`Full build ${BUILD_HASH}`}>Build {shortBuildHash()}</span>
+    <span aria-hidden="true">·</span>
+    {#if buildFreshness === 'available'}
+      {#if canRefreshBuild}
+        <button class="build-update" onclick={refreshToLatestBuild}>Update available · Refresh</button>
+      {:else}
+        <span>Update available</span>
+      {/if}
+    {:else if buildFreshness === 'offline'}
+      <span>Offline</span>
+    {:else if buildFreshness === 'checking'}
+      <span>Checking…</span>
+    {:else if buildFreshness === 'refreshing'}
+      <span>Refreshing…</span>
+    {:else if buildFreshness === 'current'}
+      <span>Current</span>
+    {:else}
+      <span>Status unavailable</span>
+    {/if}
+  </footer>
 </main>
 
 <style>
@@ -475,7 +550,7 @@
   :global(button:focus-visible), :global(input:focus-visible), :global(summary:focus-visible), :global(label.shutter:focus-within) { outline: 3px solid #fff7e7; outline-offset: 3px; }
   main { position: relative; width: min(100%, 540px); min-height: 100dvh; margin: 0 auto; overflow-x: hidden; background: radial-gradient(circle at 50% 16%, #0b2a49 0, #031426 48%, #010a14 100%); padding: max(22px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); }
   main::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .36; background-image: radial-gradient(circle, #fff 0 1px, transparent 1.5px), radial-gradient(circle, #f3b83f 0 1px, transparent 1.5px); background-position: 17px 31px, 81px 119px; background-size: 97px 103px, 151px 167px; mask-image: linear-gradient(#000, transparent 70%); }
-  section { position: relative; z-index: 1; min-height: calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+  section { position: relative; z-index: 1; min-height: calc(100dvh - 78px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
   h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-weight: 500; color: #f7c451; letter-spacing: -.02em; }
   p { line-height: 1.45; }
   button { color: inherit; }
@@ -513,7 +588,7 @@
   .visually-hidden { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
   .shutter { display:grid; place-items:center; width:76px; height:76px; border:3px solid #fff; border-radius:50%; cursor:pointer; }
   .shutter span { width:60px; height:60px; border-radius:50%; background:#fff; box-shadow:inset 0 0 0 2px #ccc; }
-  .center-panel { display:flex; min-height:calc(100dvh - 48px); flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+  .center-panel { display:flex; min-height:calc(100dvh - 78px); flex-direction:column; align-items:center; justify-content:center; text-align:center; }
   .center-panel h1 { font-size:2.25rem; } .center-panel p { color:#d7deea; } .center-panel small { color:#9eacbb; }
   .spinner { color:#f3b83f; font-size:3rem; animation:pulse 1.3s ease-in-out infinite; }
   .mapping { display:flex; gap:24px; height:90px; align-items:center; color:#f3b83f; } .mapping span:nth-child(2) { color:#d83b2d; font-size:2rem; }
@@ -558,8 +633,10 @@
   .result-image { display:block; width:100%; aspect-ratio:1; object-fit:contain; border:1px solid #f3b83f; border-radius:6px; box-shadow:0 18px 50px #000b; }
   .result-summary { margin:0; text-align:center; color:#cbd6e3; font-size:.78rem; }
   .result-actions { display:grid; gap:10px; } .restart { width:100%; }
+  .build-status { position:relative; z-index:2; display:flex; min-height:30px; align-items:center; justify-content:center; gap:6px; color:#91a2b5; font-size:.64rem; letter-spacing:.04em; }
+  .build-update { min-height:44px; padding:4px 8px; border:0; background:transparent; color:#f7c451; font-size:.7rem; font-weight:800; text-decoration:underline; cursor:pointer; }
   @keyframes pulse { 50% { opacity:.52; transform:scale(.98); } }
   @media (max-height: 760px) { main { padding-top:max(12px,env(safe-area-inset-top)); padding-bottom:max(12px,env(safe-area-inset-bottom)); } .welcome { gap:14px; } .chart-preview { width:min(45vw,210px); } .camera-placeholder { min-height:330px; } .photo-review img { max-height:38dvh; } .capture-grid li { min-height:62px; } .capture-grid img { height:62px; } }
-  @media (min-width: 760px) { main { margin:24px auto; min-height:calc(100dvh - 48px); border:1px solid #f3b83f44; border-radius:32px; box-shadow:0 30px 90px #0009; } section { min-height:calc(100dvh - 96px); } }
+  @media (min-width: 760px) { main { margin:24px auto; min-height:calc(100dvh - 48px); border:1px solid #f3b83f44; border-radius:32px; box-shadow:0 30px 90px #0009; } section { min-height:calc(100dvh - 126px); } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
 </style>

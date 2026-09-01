@@ -179,10 +179,10 @@ Browser use remains fully functional. Home Screen installation is an enhancement
 | User starts another game | Clear working photos only after the completed PNG is safely archived in Game history |
 | Old game is reopened | Show the original PNG and summary with Share again and Save image |
 | Storage write fails | Keep current data in memory, stop new capture, offer export/retry, never imply it was saved |
-| Offline | No warning if all core features work; small status only when an unavailable action is attempted |
+| Offline | Keep all core features working and label the persistent build marker **Offline**, without blocking the game |
 | Share unsupported | Replace primary action with **Save image** and explain how to share from Photos/Files |
 | Share cancelled | Return silently to the unchanged result screen |
-| New app version | Offer refresh after session completion; defer during capture |
+| New app version | Show **Update available** immediately; offer **Refresh** only at a safe stopping point and defer it during capture |
 
 ## 8. Visual system
 
