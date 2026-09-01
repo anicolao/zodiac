@@ -7,10 +7,10 @@ Zodiac is a brief ritual wrapped around a tabletop game. During play, it behaves
 The primary path is:
 
 ```text
-Start game → Capture × 6 → Confirm → Review → Generate → Share
+Start game → Capture × 6 → Confirm → Review → Generate → Archive → Share
 ```
 
-An active session always resumes where it left off. There is no account, app-level navigation bar, feed, or settings hierarchy in the MVP.
+An active session always resumes where it left off. Completed Zodiacs remain in a small on-device Game history rather than a feed or account-backed gallery. There is no account, settings hierarchy, or cloud profile in the MVP.
 
 ## 2. Design principles
 
@@ -31,6 +31,7 @@ An active session always resumes where it left off. There is no account, app-lev
 | Session review | See, reorder, edit, or retake six captures | Session |
 | Generation | Communicate short local processing | Transient |
 | Result | Preview, share, save, or start again | Session |
+| Game history | Reopen, save, or reshare completed Zodiacs | Local until browser eviction |
 | Install help | Explain Safari Home Screen steps contextually | Dismissal only |
 
 ## 4. Mock-ups
@@ -75,6 +76,11 @@ Design takeaways:
 
 - Replace the start CTA with **Resume game · 3 of 6**.
 - Secondary: **Start over**, followed by a destructive confirmation that describes what will be erased.
+
+**Returning user with completed games**
+
+- Show **Game history · N** as a clear secondary action beneath Start/Resume.
+- Do not mix old games into the active capture flow or make history feel like a public feed.
 
 Do not request camera permission on launch. Ask after the user chooses to capture, when the reason is evident.
 
@@ -135,8 +141,18 @@ The captured frame replaces the live camera immediately. A short local-processin
 - Show the complete 1:1 image without cropping. Tap opens a zoomable preview.
 - Primary **Share** invokes the native share sheet with the PNG file.
 - Secondary **Save image** uses the best supported fallback.
-- Tertiary **Start another** requires confirmation only because it replaces the current session.
+- Secondary **Game history · N** opens completed games stored on this device.
+- Tertiary **Start another** confirms that working photos will be cleared while the completed Zodiac remains in history.
 - A successful share does not claim that a destination completed an upload; return to the result and let the platform own completion feedback.
+
+### 5.9 Game history
+
+- Title: **Game history** with a count of completed games stored on this device.
+- Each row shows the finished Zodiac thumbnail, completion date, six card labels, and red/gold totals.
+- Selecting a row opens the original full-resolution output with **Share again** and **Save image**.
+- Historical entries contain the final PNG and compact summary, not the six source photographs.
+- The list is newest first, scrolls naturally, and remains usable with large text and many games.
+- History is explicitly local and may be evicted with site data; do not imply cloud backup or cross-device availability.
 
 ## 6. Installation and standalone behavior
 
@@ -160,6 +176,8 @@ Browser use remains fully functional. Home Screen installation is an enhancement
 | Some stars uncertain | Highlight only uncertain items and open Check stars |
 | Duplicate card label | Identify both captures; choose a different label or confirm if rules allow |
 | App closes mid-game | Resume from the last accepted capture; unaccepted camera frames may be lost |
+| User starts another game | Clear working photos only after the completed PNG is safely archived in Game history |
+| Old game is reopened | Show the original PNG and summary with Share again and Save image |
 | Storage write fails | Keep current data in memory, stop new capture, offer export/retry, never imply it was saved |
 | Offline | No warning if all core features work; small status only when an unavailable action is attempted |
 | Share unsupported | Replace primary action with **Save image** and explain how to share from Photos/Files |
@@ -192,6 +210,7 @@ Exact tokens must be derived with contrast testing; mock-up colors are direction
 - Thin circular rules and restrained four/eight-point ornaments echo the output.
 - Controls use generous rounded rectangles; the camera shutter retains a familiar circular silhouette.
 - Motion is sparse: a short capture flash, detection appearance, and generation transition. No looping decorative animation during camera use.
+- Finished-chart stars occupy the roomier outer portion of each wedge and use a restrained size range so dense games remain legible around the center.
 
 ## 9. Accessibility requirements
 

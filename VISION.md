@@ -66,7 +66,8 @@ It succeeds when:
 - every recognition error can be fixed without retaking the whole game;
 - players describe the output as a keepsake, not merely a visualization;
 - sharing requires one deliberate tap after generation;
-- a complete session survives accidental app closure and loss of connectivity.
+- a complete session survives accidental app closure and loss of connectivity;
+- a completed Zodiac can be recovered and reshared from local history during a later gathering.
 
 Initial product targets for a moderated test of at least 20 completed games:
 
@@ -80,9 +81,9 @@ These are learning targets, not launch claims.
 
 ## Deliberate boundaries
 
-The first release supports one six-card physical game, a six-sector chart, red and gold star pieces, printed card-name OCR, and the approved visual theme. It does not determine winners, recognize people, maintain social profiles, publish a public gallery, or synthesize decorative imagery in the cloud.
+The first release supports one six-card physical game, a six-sector chart, red and gold star pieces, printed card-name OCR, local completed-game history, and the approved visual theme. It does not determine winners, recognize people, maintain social profiles, publish a public gallery, sync across devices, or synthesize decorative imagery in the cloud.
 
-OCR for layouts beyond the supported card design, arbitrary component types, multiplayer synchronization, historical libraries, alternate themes, and print ordering may follow only after the core ritual is proven.
+OCR for layouts beyond the supported card design, arbitrary component types, multiplayer synchronization, searchable/cloud-synced history, alternate themes, and print ordering may follow only after the core ritual is proven.
 
 ## Longer-term direction
 
@@ -90,7 +91,7 @@ If the ritual resonates, Zodiac can grow from a one-game tool into a small forma
 
 - additional game profiles define card catalogues, piece colors, and chart layouts;
 - optional captions record the occasion without changing the core art;
-- a private on-device gallery lets players revisit prior games;
+- richer history tools add captions, search, and deliberate deletion without turning the app into a social feed;
 - visual themes provide variety while preserving data fidelity;
 - high-resolution print exports turn exceptional games into physical keepsakes.
 

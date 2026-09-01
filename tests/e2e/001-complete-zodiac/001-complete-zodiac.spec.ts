@@ -101,6 +101,22 @@ test('a complete six-card game becomes a shareable Zodiac', async ({ page }, tes
         expect(dimensions).toEqual({ width: 2048, height: 2048 });
       } },
       { spec: 'The accessible summary reports all six constellations and 37 stars', check: async () => expect(page.getByText('Six constellations · 37 stars · rendered privately on this device')).toBeVisible() },
+      { spec: 'The completed output is archived as one recoverable history entry', check: async () => {
+        await expect.poll(() => page.evaluate(async () => {
+          const database = await new Promise<IDBDatabase>((resolve, reject) => {
+            const request = indexedDB.open('zodiac-local', 2);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+          });
+          const count = await new Promise<number>((resolve, reject) => {
+            const request = database.transaction('history', 'readonly').objectStore('history').count();
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+          });
+          database.close();
+          return count;
+        })).toBe(1);
+      } },
       { spec: 'No request leaves the application origin', check: async () => expect(outsideRequests).toEqual([]) }
     ]
   });
@@ -121,6 +137,47 @@ test('a complete six-card game becomes a shareable Zodiac', async ({ page }, tes
       } },
       { spec: 'Restoration makes no external network request', check: async () => expect(outsideRequests).toEqual([]) }
     ]
+  });
+
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: 'Start another' }).click();
+  await page.getByRole('button', { name: 'Game history · 1' }).click();
+  await steps.step('game-history', {
+    description: 'The completed game remains available after its active photos are cleared',
+    verifications: [
+      { spec: 'Game history contains exactly one locally saved Zodiac', check: async () => expect(page.locator('.history-card')).toHaveCount(1) },
+      { spec: 'The history summary retains all card labels and token totals', check: async () => {
+        await expect(page.getByText('CASTLE · DRAGON · SAILBOAT · ELEPHANT · GUITAR · HOT AIR BALLOON')).toBeVisible();
+        await expect(page.getByText('37 stars · 27 gold · 10 red')).toBeVisible();
+      } },
+      { spec: 'The saved output has a recoverable visual preview', check: async () => expect(page.locator('.history-card img')).toBeVisible() }
+    ]
+  });
+
+  await page.getByRole('button', { name: /Open Zodiac from/ }).click();
+  await steps.step('historical-zodiac', {
+    description: 'An old Zodiac can be recovered and shared again',
+    verifications: [
+      { spec: 'The historical output is still the original 2048×2048 PNG', check: async () => {
+        const dimensions = await page.locator('.result-image').evaluate((image) => ({
+          width: (image as HTMLImageElement).naturalWidth,
+          height: (image as HTMLImageElement).naturalHeight
+        }));
+        expect(dimensions).toEqual({ width: 2048, height: 2048 });
+      } },
+      { spec: 'History exposes explicit reshare and save actions', check: async () => {
+        await expect(page.getByRole('button', { name: 'Share again' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Save image' })).toBeVisible();
+      } },
+      { spec: 'Recovery and history navigation make no external request', check: async () => expect(outsideRequests).toEqual([]) }
+    ]
+  });
+
+  await page.evaluate(() => delete (window as unknown as { __sharedZodiac?: unknown }).__sharedZodiac);
+  await page.getByRole('button', { name: 'Share again' }).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __sharedZodiac?: unknown }).__sharedZodiac)).toMatchObject({
+    name: 'my-zodiac.png',
+    type: 'image/png'
   });
 
   steps.generateDocs();

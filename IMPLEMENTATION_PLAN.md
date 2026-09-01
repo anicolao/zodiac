@@ -14,7 +14,7 @@ Deliver the MVP as the repository's first pull request: an installable Svelte SP
 
 ## Architecture
 
-The production build is a static SvelteKit SPA. A system camera/photo input provides the image. Canvas re-encodes it to strip metadata, a locally bundled Tesseract worker reads the printed card, and a purpose-built HSV/connected-component detector records colored tokens. IndexedDB stores the sanitized blobs and structured session. Canvas renders a deterministic 2048×2048 PNG. The Web Share API receives that file when supported; download is the fallback. The service worker caches the application, OCR engine, language data, and root shell for offline use.
+The production build is a static SvelteKit SPA. A system camera/photo input provides the image. Canvas re-encodes it to strip metadata, a locally bundled Tesseract worker reads the printed card, and a purpose-built HSV/connected-component detector records colored tokens. IndexedDB stores the sanitized active session plus compact completed-game history entries. Canvas renders a deterministic 2048×2048 PNG. The Web Share API receives that file when supported; download is the fallback. The service worker caches the application, OCR engine, language data, and root shell for offline use.
 
 No backend, user account, analytics SDK, CDN runtime dependency, cloud OCR, or image upload exists in the MVP.
 
@@ -45,6 +45,9 @@ No backend, user account, analytics SDK, CDN runtime dependency, cloud OCR, or i
 - [x] Render the approved navy/gold six-sector chart at 2048×2048.
 - [x] Preserve confirmed labels, colors, relative positions, and token sizes.
 - [x] Restore the completed output after reload.
+- [x] Atomically archive each completed PNG and summary in a versioned local Game history.
+- [x] Recover, save, and reshare historical Zodiacs without retaining their source photographs.
+- [x] Move finished stars into a roomier outer band and reduce their display scale.
 - [x] Share a PNG file through the platform API with download fallback.
 
 ### 4. Home Screen and offline behavior — complete
@@ -62,6 +65,7 @@ No backend, user account, analytics SDK, CDN runtime dependency, cloud OCR, or i
 - [x] Zero-pixel phone and desktop visual baselines.
 - [x] Complete six-fixture start-to-share test with no external requests.
 - [x] IndexedDB reload recovery test.
+- [x] Completed-game history recovery and reshare test.
 - [x] Offline service-worker/OCR test.
 - [x] Retained GitHub Pages preview for each PR with a bot-authored review link.
 - [x] Base-path-safe manifest, OCR assets, and service-worker scope for preview and production URLs.

@@ -31,7 +31,8 @@ If the game rules differ, adjust the domain model before implementation rather t
 - 2048×2048 PNG export;
 - native file sharing when supported and save/download fallback;
 - install metadata, standalone presentation, safe-area layout, and offline app shell;
-- local session recovery after refresh or app termination.
+- local session recovery after refresh or app termination;
+- an on-device completed-game history for reopening, saving, and resharing old Zodiacs.
 
 ### Excluded
 
@@ -40,7 +41,7 @@ If the game rules differ, adjust the domain model before implementation rather t
 - arbitrary games, token shapes, or chart geometries;
 - generative image models;
 - cloud OCR, photo upload, or recognition of unsupported card layouts;
-- multiple saved sessions or a permanent gallery;
+- cloud-synced history, public galleries, history search, or cross-device recovery;
 - localization, alternate art themes, and print ordering;
 - background processing after the app is closed.
 
@@ -49,6 +50,7 @@ If the game rules differ, adjust the domain model before implementation rather t
 ```mermaid
 flowchart TD
     A[Launch] --> B{Active session?}
+    A --> L[Game history]
     B -- No --> C[Start game]
     B -- Yes --> D[Resume or discard]
     C --> E[Capture arrangement]
@@ -59,7 +61,9 @@ flowchart TD
     H -- No --> E
     H -- Yes --> I[Review and reorder]
     I --> J[Render Zodiac locally]
-    J --> K[Share or save PNG]
+    J --> K[Archive completed Zodiac locally]
+    K --> M[Share or save PNG]
+    L --> N[Open and reshare old Zodiac]
 ```
 
 Each accepted capture is persisted before the app returns to the camera. The user never has to keep the camera stream alive while reviewing or generating.
@@ -142,11 +146,22 @@ interface GameSession {
   captures: Capture[];
   outputBlobKey?: string;
 }
+
+interface GameHistoryEntry {
+  schemaVersion: 1;
+  id: string;
+  createdAt: string;
+  completedAt: string;
+  cardLabels: string[];
+  goldCount: number;
+  redCount: number;
+  output: Blob;
+}
 ```
 
 Persist records and sanitized blobs in IndexedDB. Never store base64 images in localStorage. Request persistent storage where supported, but design recovery messaging on the assumption that the browser can still evict data.
 
-Only one active session is retained in the MVP. Starting another session requires an explicit confirmation and deletes the previous working images after the new session is created successfully.
+Only one active capture session is retained. Completion atomically updates that active result and an idempotent history entry. Starting another game deletes the prior working photographs but preserves the compact history record and final PNG. A version-2 IndexedDB migration creates the history store without disturbing a version-1 active session; a legacy completed active session is backfilled on first launch.
 
 ## 6. Image-processing pipeline
 
@@ -195,8 +210,8 @@ Render at a fixed 2048×2048 logical canvas:
 1. paint the navy star-field background from licensed local texture/procedural noise;
 2. draw outer rings, six radial dividers, and ornament in warm gold;
 3. place sector labels along the ring in capture order;
-4. map each capture's normalized positions into its wedge with padding and collision-safe minimum spacing;
-5. draw red/gold star glyphs using each token's normalized recorded size, clamped only to maintain legibility;
+4. map each capture's normalized positions into a roomy outer band of its wedge, leaving the center visually open;
+5. draw restrained red/gold star glyphs using each token's normalized recorded size, clamped only to maintain legibility and sector spacing;
 6. convert the canvas to a PNG blob.
 
 The same session data must always generate the same chart for a given renderer version. Keep the renderer version with the output record for reproducibility.
@@ -231,7 +246,7 @@ Create a `File` from the PNG blob, then call `navigator.canShare({ files: [file]
 - Use a restrictive Content Security Policy compatible with local workers and blobs.
 - Never place captures or output URLs in logs, analytics, error reports, or route parameters.
 - Revoke object URLs and stop camera tracks promptly.
-- Provide a visible “Discard game” action that deletes all session blobs and records.
+- Provide a visible “Discard game” action that deletes the active capture session and its working photo blobs without silently deleting completed history.
 
 ## 10. Functional acceptance criteria
 
@@ -256,6 +271,8 @@ Create a `File` from the PNG blob, then call `navigator.canShare({ files: [file]
 - Output is visually stable across current iPhone Safari/Home Screen mode and desktop reference browsers.
 - A supported iPhone opens the native share sheet with the PNG attached from one result-screen tap.
 - Unsupported file sharing exposes a working save/download fallback.
+- Every completed Zodiac appears in local Game history after starting another game or relaunching the app.
+- A historical Zodiac retains its date, six card labels, color totals, original 2048×2048 PNG, and working share/save actions without retaining its six source photos.
 
 ### Offline and installation
 
@@ -274,7 +291,7 @@ Create a `File` from the PNG blob, then call `navigator.canShare({ files: [file]
 - Unit tests: coordinate transforms, color classification, session validation, sector mapping, renderer determinism, data migrations.
 - Golden-image tests: fixed session JSON compared with approved render snapshots within a defined pixel tolerance.
 - Fixture tests: varied lighting, shadows, wood tones, rotated cards, partially close pieces, and both example images.
-- Component tests: capture-review corrections, restore flow, destructive confirmations, offline/update notices.
+- Component tests: capture-review corrections, active restore, completed-history recovery/reshare, destructive confirmations, offline/update notices.
 - Real-device tests: at minimum the oldest supported iPhone, a current iPhone, Safari tab mode, Home Screen mode, denied permissions, low storage, offline launch, and share-sheet cancellation.
 - Privacy check: inspect stored blobs and all network traffic during a complete session.
 
@@ -294,7 +311,6 @@ Do not begin visual polish beyond the vertical slice until the technical spike d
 - Whether sector order follows capture time, game-defined order, or manual order
 - Whether the artwork date/title belongs inside the exported image
 - Licensed production typefaces, texture, and ornament assets
-- Whether users may keep more than one session after the MVP
 
 ## 14. Implementation references
 

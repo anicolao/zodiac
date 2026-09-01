@@ -96,6 +96,7 @@ Six realistic gameplay photographs are read locally, confirmed, composed into th
 
 - [x] The output is a complete 2048×2048 PNG preview
 - [x] The accessible summary reports all six constellations and 37 stars
+- [x] The completed output is archived as one recoverable history entry
 - [x] No request leaves the application origin
 
 ## The completed keepsake survives an app reload and remains shareable
@@ -107,3 +108,23 @@ Six realistic gameplay photographs are read locally, confirmed, composed into th
 - [x] IndexedDB restores the generated Zodiac without a server
 - [x] Share and save actions remain available
 - [x] Restoration makes no external network request
+
+## The completed game remains available after its active photos are cleared
+
+![The completed game remains available after its active photos are cleared](./screenshots/010-game-history-phone.png)
+
+**Verifications:**
+
+- [x] Game history contains exactly one locally saved Zodiac
+- [x] The history summary retains all card labels and token totals
+- [x] The saved output has a recoverable visual preview
+
+## An old Zodiac can be recovered and shared again
+
+![An old Zodiac can be recovered and shared again](./screenshots/011-historical-zodiac-phone.png)
+
+**Verifications:**
+
+- [x] The historical output is still the original 2048×2048 PNG
+- [x] History exposes explicit reshare and save actions
+- [x] Recovery and history navigation make no external request

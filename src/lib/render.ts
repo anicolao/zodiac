@@ -20,11 +20,11 @@ export function mapStarToSector(
 ): RenderedStar {
   const sectorCenter = -Math.PI / 2 + sector * (Math.PI / 3);
   const angle = sectorCenter + (star.x - 0.5) * (Math.PI / 3) * 0.7;
-  const radius = chartRadius * (0.27 + star.y * 0.43);
+  const radius = chartRadius * (0.38 + star.y * 0.42);
   return {
     x: center + Math.cos(angle) * radius,
     y: center + Math.sin(angle) * radius,
-    radius: Math.max(12, Math.min(72, star.size * chartRadius * 0.55)),
+    radius: Math.max(10, Math.min(56, star.size * chartRadius * 0.42)),
     color: star.color === 'red' ? RED : GOLD
   };
 }
