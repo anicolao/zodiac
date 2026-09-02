@@ -17,3 +17,5 @@ The north arrow should always point straight up relative to the bounding box. Te
 OK I hvae updated the fixtures. Do we have tests that validate recognition handles these images now? do they still pass with my changes to the fixture json?
 
 fix the files, the editor, add the real test, and then make it green.
+
+Let's put this branch up as a PR
