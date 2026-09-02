@@ -1,12 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "img_0936",
   "reviewStatus": "draft",
   "image": { "file": "img_0936.jpg", "width": 1200, "height": 1600, "source": "assets/examples/IMG_0936.jpg" },
   "expected": {
     "cardLabel": "CAKE",
-    "textRegion": { "corners": [{ "x": 0.438, "y": 0.228 }, { "x": 0.582, "y": 0.239 }, { "x": 0.579, "y": 0.273 }, { "x": 0.435, "y": 0.262 }] },
-    "north": { "origin": { "x": 0.508, "y": 0.251 }, "target": { "x": 0.514, "y": 0.181 } },
+    "textRegion": { "center": { "x": 0.5085, "y": 0.2505 }, "width": 0.1447, "height": 0.0454, "rotationDegrees": 5.82 },
     "stars": [
       { "id": "gold-1", "color": "gold", "center": { "x": 0.353, "y": 0.496 }, "radius": 0.03 },
       { "id": "red-1", "color": "red", "center": { "x": 0.29, "y": 0.648 }, "radius": 0.045 },

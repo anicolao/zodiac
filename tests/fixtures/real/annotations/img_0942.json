@@ -1,12 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "img_0942",
   "reviewStatus": "draft",
   "image": { "file": "img_0942.jpg", "width": 1200, "height": 1600, "source": "assets/examples/IMG_0942.jpg" },
   "expected": {
     "cardLabel": "FAN",
-    "textRegion": { "corners": [{ "x": 0.824, "y": 0.248 }, { "x": 0.908, "y": 0.324 }, { "x": 0.882, "y": 0.348 }, { "x": 0.798, "y": 0.272 }] },
-    "north": { "origin": { "x": 0.853, "y": 0.298 }, "target": { "x": 0.905, "y": 0.247 } },
+    "textRegion": { "center": { "x": 0.853, "y": 0.298 }, "width": 0.1316, "height": 0.0412, "rotationDegrees": 50.34 },
     "stars": [
       { "id": "gold-1", "color": "gold", "center": { "x": 0.282, "y": 0.379 }, "radius": 0.03 },
       { "id": "red-1", "color": "red", "center": { "x": 0.547, "y": 0.441 }, "radius": 0.045 },
