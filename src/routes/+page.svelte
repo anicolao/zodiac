@@ -13,6 +13,7 @@
   import { renderZodiac } from '$lib/render';
   import { saveZodiac, shareZodiac } from '$lib/share';
   import { newSession, type DetectedStar, type GameHistoryEntry, type GameSession } from '$lib/types';
+  import type { RecognizedTextRegion } from '$lib/ocr';
 
   type Stage = 'loading' | 'welcome' | 'capture' | 'processing' | 'confirm' | 'review' | 'generating' | 'result' | 'history' | 'history-result';
   interface PendingCapture {
@@ -20,6 +21,8 @@
     preview: string;
     cardLabel: string;
     stars: DetectedStar[];
+    textRegion?: RecognizedTextRegion;
+    imageAspectRatio: number;
   }
   type BuildFreshness = 'checking' | 'current' | 'available' | 'offline' | 'unknown' | 'refreshing';
 
@@ -212,6 +215,8 @@
       cardLabel: pending.cardLabel.trim().toUpperCase(),
       image: pending.image,
       stars: pending.stars,
+      cardRotationDegrees: pending.textRegion?.rotationDegrees,
+      imageAspectRatio: pending.imageAspectRatio,
       acceptedAt: new Date().toISOString()
     };
     session.captures = [...session.captures, next];
@@ -438,7 +443,10 @@
               class:gold={star.color === 'gold'}
               class:red={star.color === 'red'}
               class="detected-star"
-              style={`left:${star.x * 100}%;top:${star.y * 64}%;width:${Math.max(26, star.size * 260)}px;height:${Math.max(26, star.size * 260)}px`}
+              style={`left:${star.x * 100}%;top:${star.y * 100}%;width:${Math.max(26, star.size * 260)}px;height:${Math.max(26, star.size * 260)}px`}
+              data-star-x={star.x}
+              data-star-y={star.y}
+              data-star-size={star.size}
               aria-label={`${star.color} star, tap to change color`}
               title="Tap to change color"
               onclick={() => toggleStar(star.id)}
@@ -449,6 +457,17 @@
       <div class="confirm-card">
         <label for="card-name">Printed card name</label>
         <input id="card-name" bind:value={pending.cardLabel} autocomplete="off" autocapitalize="characters" placeholder="Read from the photographed card" />
+        {#if pending.textRegion}
+          <output
+            class="visually-hidden"
+            data-testid="recognized-text-region"
+            data-center-x={pending.textRegion.center.x}
+            data-center-y={pending.textRegion.center.y}
+            data-width={pending.textRegion.width}
+            data-height={pending.textRegion.height}
+            data-rotation-degrees={pending.textRegion.rotationDegrees}
+          >Text direction {pending.textRegion.rotationDegrees.toFixed(1)} degrees</output>
+        {/if}
         <div class="token-summary" aria-label={`${pendingGold} gold and ${pendingRed} red stars`}>
           <span class="gold-ink">★ {pendingGold} gold</span><span class="red-ink">★ {pendingRed} red</span>
         </div>

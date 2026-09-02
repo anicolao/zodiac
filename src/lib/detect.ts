@@ -106,15 +106,13 @@ function components(mask: Uint8Array, width: number, height: number) {
 
 export function detectStars(source: HTMLCanvasElement): DetectedStar[] {
   const analysisWidth = 420;
-  const regionRatio = 0.64;
-  const sourceRegionHeight = Math.round(source.height * regionRatio);
-  const analysisHeight = Math.round((sourceRegionHeight / source.width) * analysisWidth);
+  const analysisHeight = Math.round((source.height / source.width) * analysisWidth);
   const canvas = document.createElement('canvas');
   canvas.width = analysisWidth;
   canvas.height = analysisHeight;
   const context = canvas.getContext('2d', { willReadFrequently: true });
   if (!context) return [];
-  context.drawImage(source, 0, 0, source.width, sourceRegionHeight, 0, 0, analysisWidth, analysisHeight);
+  context.drawImage(source, 0, 0, source.width, source.height, 0, 0, analysisWidth, analysisHeight);
   const pixels = context.getImageData(0, 0, analysisWidth, analysisHeight).data;
   const masks: Record<StarColor, Uint8Array> = {
     gold: new Uint8Array(analysisWidth * analysisHeight),

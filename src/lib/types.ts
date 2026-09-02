@@ -14,6 +14,8 @@ export interface Capture {
   cardLabel: string;
   image: Blob;
   stars: DetectedStar[];
+  cardRotationDegrees?: number;
+  imageAspectRatio?: number;
   acceptedAt: string;
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapStarToSector } from '../../src/lib/render';
+import { mapStarToSector, orientStarsToCardNorth } from '../../src/lib/render';
 
 describe('Zodiac sector mapping', () => {
   it('preserves relative token size in the final art', () => {
@@ -19,5 +19,19 @@ describe('Zodiac sector mapping', () => {
     expect(Math.hypot(inner.x - center, inner.y - center)).toBeCloseTo(chartRadius * 0.38);
     expect(Math.hypot(outer.x - center, outer.y - center)).toBeCloseTo(chartRadius * 0.8);
     expect(inner.radius).toBeLessThan(24);
+  });
+
+  it('turns the card-defined north direction toward the top of the constellation', () => {
+    const stars = orientStarsToCardNorth({
+      cardRotationDegrees: 90,
+      imageAspectRatio: 1,
+      stars: [
+        { id: 'north', color: 'gold', x: 0.7, y: 0.5, size: 0.06, confidence: 1 },
+        { id: 'south', color: 'red', x: 0.3, y: 0.5, size: 0.1, confidence: 1 }
+      ]
+    });
+    expect(stars[0].x).toBeCloseTo(0.5);
+    expect(stars[0].y).toBeLessThan(0.5);
+    expect(stars[1].y).toBeGreaterThan(0.5);
   });
 });

@@ -2,18 +2,87 @@
   "schemaVersion": 2,
   "id": "img_0943",
   "reviewStatus": "draft",
-  "image": { "file": "img_0943.jpg", "width": 1200, "height": 1600, "source": "assets/examples/IMG_0943.jpg" },
+  "image": {
+    "file": "img_0943.jpg",
+    "width": 1200,
+    "height": 1600,
+    "source": "assets/examples/IMG_0943.jpg"
+  },
   "expected": {
     "cardLabel": "TREASURE",
-    "textRegion": { "center": { "x": 0.738, "y": 0.482 }, "width": 0.168, "height": 0.062, "rotationDegrees": 90 },
+    "textRegion": {
+      "center": {
+        "x": 0.731039998259053,
+        "y": 0.48114054415773067
+      },
+      "width": 0.168,
+      "height": 0.039720941898911656,
+      "rotationDegrees": 79.06783696973645
+    },
     "stars": [
-      { "id": "gold-1", "color": "gold", "center": { "x": 0.164, "y": 0.469 }, "radius": 0.03 },
-      { "id": "gold-2", "color": "gold", "center": { "x": 0.437, "y": 0.409 }, "radius": 0.03 },
-      { "id": "gold-3", "color": "gold", "center": { "x": 0.485, "y": 0.493 }, "radius": 0.03 },
-      { "id": "gold-4", "color": "gold", "center": { "x": 0.298, "y": 0.546 }, "radius": 0.03 },
-      { "id": "gold-5", "color": "gold", "center": { "x": 0.538, "y": 0.589 }, "radius": 0.03 },
-      { "id": "gold-6", "color": "gold", "center": { "x": 0.263, "y": 0.644 }, "radius": 0.03 },
-      { "id": "red-1", "color": "red", "center": { "x": 0.421, "y": 0.629 }, "radius": 0.045 }
+      {
+        "id": "gold-1",
+        "color": "gold",
+        "center": {
+          "x": 0.164,
+          "y": 0.469
+        },
+        "radius": 0.03
+      },
+      {
+        "id": "gold-2",
+        "color": "gold",
+        "center": {
+          "x": 0.437,
+          "y": 0.409
+        },
+        "radius": 0.03
+      },
+      {
+        "id": "gold-3",
+        "color": "gold",
+        "center": {
+          "x": 0.485,
+          "y": 0.493
+        },
+        "radius": 0.03
+      },
+      {
+        "id": "gold-4",
+        "color": "gold",
+        "center": {
+          "x": 0.298,
+          "y": 0.546
+        },
+        "radius": 0.03
+      },
+      {
+        "id": "gold-5",
+        "color": "gold",
+        "center": {
+          "x": 0.538,
+          "y": 0.589
+        },
+        "radius": 0.03
+      },
+      {
+        "id": "gold-6",
+        "color": "gold",
+        "center": {
+          "x": 0.263,
+          "y": 0.644
+        },
+        "radius": 0.03
+      },
+      {
+        "id": "red-1",
+        "color": "red",
+        "center": {
+          "x": 0.421,
+          "y": 0.629
+        },
+        "radius": 0.045
+      }
     ]
   }
 }

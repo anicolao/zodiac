@@ -55,7 +55,7 @@
       const response = await fetch(`${apiRoot}/manifest.json`, { cache: 'no-store' });
       if (!response.ok) throw new Error(`Fixture manifest returned ${response.status}.`);
       const result = (await response.json()) as { fixtures: FixtureAnnotation[] };
-      fixtures = result.fixtures;
+      fixtures = result.fixtures.map((fixture) => ({ ...fixture, schemaVersion: 2 }));
       savedRecords = Object.fromEntries(fixtures.map((fixture) => [fixture.id, JSON.stringify(fixture)]));
       selectedId = fixtures[0]?.id ?? '';
     } catch (error) {
@@ -200,6 +200,7 @@
 
   async function saveSelected() {
     if (!selected) return;
+    selected.schemaVersion = 2;
     saveMessage = 'Saving…';
     const response = await fetch(`${apiRoot}/annotations/${selected.id}.json`, {
       method: 'POST',
@@ -217,6 +218,7 @@
 
   function downloadSelected() {
     if (!selected) return;
+    selected.schemaVersion = 2;
     const blob = new Blob([`${JSON.stringify(selected, null, 2)}\n`], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');

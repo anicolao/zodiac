@@ -23,6 +23,8 @@ The route deliberately has no production data endpoint. It is not linked from th
 
 The JSON preview and per-record download are available for inspection, but **Save JSON** is the canonical repository workflow.
 
+`npm run test:e2e` runs every photograph through the production browser recognition path and compares the result with these records. A saved annotation therefore changes executable OCR, token, geometry, and orientation expectations.
+
 ## Dataset layout
 
 ```text

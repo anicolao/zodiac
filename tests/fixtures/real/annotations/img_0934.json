@@ -2,15 +2,60 @@
   "schemaVersion": 2,
   "id": "img_0934",
   "reviewStatus": "draft",
-  "image": { "file": "img_0934.jpg", "width": 1200, "height": 1600, "source": "assets/examples/IMG_0934.jpg" },
+  "image": {
+    "file": "img_0934.jpg",
+    "width": 1200,
+    "height": 1600,
+    "source": "assets/examples/IMG_0934.jpg"
+  },
   "expected": {
     "cardLabel": "TRUNK",
-    "textRegion": { "center": { "x": 0.675, "y": 0.1422 }, "width": 0.2151, "height": 0.0545, "rotationDegrees": 13.63 },
+    "textRegion": {
+      "center": {
+        "x": 0.6774841138579387,
+        "y": 0.13724314090323003
+      },
+      "width": 0.2151,
+      "height": 0.0545,
+      "rotationDegrees": 13.63
+    },
     "stars": [
-      { "id": "gold-1", "color": "gold", "center": { "x": 0.474, "y": 0.552 }, "radius": 0.03 },
-      { "id": "red-1", "color": "red", "center": { "x": 0.296, "y": 0.611 }, "radius": 0.045 },
-      { "id": "gold-2", "color": "gold", "center": { "x": 0.26, "y": 0.771 }, "radius": 0.03 },
-      { "id": "gold-3", "color": "gold", "center": { "x": 0.705, "y": 0.778 }, "radius": 0.03 }
+      {
+        "id": "gold-1",
+        "color": "gold",
+        "center": {
+          "x": 0.474,
+          "y": 0.552
+        },
+        "radius": 0.03
+      },
+      {
+        "id": "red-1",
+        "color": "red",
+        "center": {
+          "x": 0.296,
+          "y": 0.611
+        },
+        "radius": 0.045
+      },
+      {
+        "id": "gold-2",
+        "color": "gold",
+        "center": {
+          "x": 0.26,
+          "y": 0.771
+        },
+        "radius": 0.03
+      },
+      {
+        "id": "gold-3",
+        "color": "gold",
+        "center": {
+          "x": 0.705,
+          "y": 0.778
+        },
+        "radius": 0.03
+      }
     ]
   }
 }

@@ -1,15 +1,24 @@
 import { detectStars } from './detect';
 import { normalizeImage } from './image';
-import { recognizeCardLabel } from './ocr';
+import { recognizeCard, type RecognizedTextRegion } from './ocr';
 
 export async function analyzePhotograph(file: Blob) {
   const normalized = await normalizeImage(file);
   const stars = detectStars(normalized.canvas);
   let cardLabel = '';
+  let textRegion: RecognizedTextRegion | undefined;
   try {
-    cardLabel = await recognizeCardLabel(normalized.canvas);
+    const card = await recognizeCard(normalized.canvas);
+    cardLabel = card.label;
+    textRegion = card.textRegion;
   } catch (error) {
     console.warn('Local card-name recognition failed', error);
   }
-  return { image: normalized.blob, stars, cardLabel };
+  return {
+    image: normalized.blob,
+    imageAspectRatio: normalized.canvas.width / normalized.canvas.height,
+    stars,
+    cardLabel,
+    textRegion
+  };
 }
