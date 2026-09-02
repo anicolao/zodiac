@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "img_0942",
+  "reviewStatus": "draft",
+  "image": { "file": "img_0942.jpg", "width": 1200, "height": 1600, "source": "assets/examples/IMG_0942.jpg" },
+  "expected": {
+    "cardLabel": "FAN",
+    "textRegion": { "corners": [{ "x": 0.824, "y": 0.248 }, { "x": 0.908, "y": 0.324 }, { "x": 0.882, "y": 0.348 }, { "x": 0.798, "y": 0.272 }] },
+    "north": { "origin": { "x": 0.853, "y": 0.298 }, "target": { "x": 0.905, "y": 0.247 } },
+    "stars": [
+      { "id": "gold-1", "color": "gold", "center": { "x": 0.282, "y": 0.379 }, "radius": 0.03 },
+      { "id": "red-1", "color": "red", "center": { "x": 0.547, "y": 0.441 }, "radius": 0.045 },
+      { "id": "gold-2", "color": "gold", "center": { "x": 0.681, "y": 0.48 }, "radius": 0.03 },
+      { "id": "red-2", "color": "red", "center": { "x": 0.333, "y": 0.522 }, "radius": 0.045 },
+      { "id": "gold-3", "color": "gold", "center": { "x": 0.409, "y": 0.632 }, "radius": 0.03 }
+    ]
+  }
+}

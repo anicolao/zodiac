@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node scripts/write-build-info.mjs && vite dev --host 127.0.0.1 --port 5191 --strictPort",
     "build": "node scripts/write-build-info.mjs && vite build",
+    "fixtures:prepare": "node scripts/prepare-real-fixtures.mjs",
     "preview": "vite preview --host 127.0.0.1 --port 4191 --strictPort",
     "prepare": "svelte-kit sync && node scripts/copy-ocr-assets.mjs",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

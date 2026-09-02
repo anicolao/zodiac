@@ -100,7 +100,8 @@ Product acceptance additionally requires a physical iPhone run confirming Home S
 
 ## Post-review sequence
 
-1. Run the real-device acceptance pass and record results in the PR.
-2. Tune detection thresholds only from failed real photographs, adding each as a regression fixture with permission.
-3. Resolve remaining sector-order and in-art date/title decisions.
-4. Merge PR 1 only after product, visual, privacy, and physical-device review.
+1. Review and approve the real-photo expected outputs at `/fixtures`; keep the annotations independent of algorithm output.
+2. Rewrite recognition against the approved real-photo corpus without weakening expected records to accommodate failures.
+3. Run the real-device acceptance pass and record results in the PR.
+4. Add each permitted field failure as a new regression fixture before tuning recognition.
+5. Resolve remaining sector-order and in-art date/title decisions.
