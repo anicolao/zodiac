@@ -12,6 +12,35 @@ export interface RenderedStar {
   color: string;
 }
 
+export function orientStarsToCardNorth(capture: Pick<Capture, 'stars' | 'cardRotationDegrees' | 'imageAspectRatio'>): DetectedStar[] {
+  if (capture.cardRotationDegrees === undefined || Math.abs(capture.cardRotationDegrees) < 0.01 || capture.stars.length < 2) {
+    return capture.stars;
+  }
+  const centerX = capture.stars.reduce((sum, star) => sum + star.x, 0) / capture.stars.length;
+  const centerY = capture.stars.reduce((sum, star) => sum + star.y, 0) / capture.stars.length;
+  const aspectRatio = capture.imageAspectRatio ?? 1;
+  const rotation = -capture.cardRotationDegrees * Math.PI / 180;
+  const cosine = Math.cos(rotation);
+  const sine = Math.sin(rotation);
+  const rotated = capture.stars.map((star) => {
+    const x = (star.x - centerX) * aspectRatio;
+    const y = star.y - centerY;
+    return { star, x: x * cosine - y * sine, y: x * sine + y * cosine };
+  });
+  const minX = Math.min(...rotated.map(({ x }) => x));
+  const maxX = Math.max(...rotated.map(({ x }) => x));
+  const minY = Math.min(...rotated.map(({ y }) => y));
+  const maxY = Math.max(...rotated.map(({ y }) => y));
+  const span = Math.max(maxX - minX, maxY - minY, 0.001);
+  const midpointX = (minX + maxX) / 2;
+  const midpointY = (minY + maxY) / 2;
+  return rotated.map(({ star, x, y }) => ({
+    ...star,
+    x: 0.5 + (x - midpointX) / span * 0.72,
+    y: 0.5 + (y - midpointY) / span * 0.72
+  }));
+}
+
 export function mapStarToSector(
   star: Pick<DetectedStar, 'x' | 'y' | 'size' | 'color'>,
   sector: number,
@@ -169,7 +198,7 @@ export async function renderZodiac(session: GameSession): Promise<Blob> {
 
   session.captures.forEach((capture, sector) => {
     drawArcLabel(context, capture.cardLabel, center, radius - 63, sector);
-    for (const star of capture.stars) {
+    for (const star of orientStarsToCardNorth(capture)) {
       const mapped = mapStarToSector(star, sector, center, radius - 116);
       drawFivePointStar(context, mapped.x, mapped.y, mapped.radius, mapped.color);
     }

@@ -64,6 +64,16 @@ export function fixtureDevServer(): Plugin {
             if (!annotation || typeof annotation !== 'object' || !('id' in annotation) || annotation.id !== annotationMatch[1]) {
               return json(response, 400, { error: 'Annotation id does not match its filename.' });
             }
+            const expected = 'expected' in annotation && annotation.expected && typeof annotation.expected === 'object'
+              ? annotation.expected
+              : undefined;
+            const textRegion = expected && 'textRegion' in expected && expected.textRegion && typeof expected.textRegion === 'object'
+              ? expected.textRegion
+              : undefined;
+            if (!textRegion || !('center' in textRegion) || !('width' in textRegion) || !('height' in textRegion) || !('rotationDegrees' in textRegion)) {
+              return json(response, 400, { error: 'Annotation must use the current rectangular text-region schema.' });
+            }
+            Object.assign(annotation, { schemaVersion: 2 });
             await mkdir(annotationRoot, { recursive: true });
             await writeFile(join(annotationRoot, `${annotationMatch[1]}.json`), `${JSON.stringify(annotation, null, 2)}\n`);
             return json(response, 200, { saved: annotationMatch[1] });

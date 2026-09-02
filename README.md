@@ -71,7 +71,7 @@ npm run test:e2e
 
 The Playwright suite uses six AI-generated, photorealistic gameplay fixtures in `tests/e2e/fixtures/`. It performs a complete start-to-share-and-reshare run, validates the 2048×2048 output, completed-game history, reload recovery, phone/desktop presentation, manifest metadata, touch targets, and offline OCR. See [E2E_GUIDE.md](E2E_GUIDE.md) before changing UI or tests.
 
-Fourteen real iPhone photographs form the next recognition regression corpus in `tests/fixtures/real/`. Run `npm run dev` and open `/fixtures` to review their editable text regions, card-defined north vectors, and token circles before using them as algorithmic acceptance data. See [FIXTURE_GUIDE.md](FIXTURE_GUIDE.md) for the schema and approval workflow.
+Fourteen real iPhone photographs form the recognition regression corpus in `tests/fixtures/real/`. Run `npm run dev` and open `/fixtures` to review their editable text regions, card-defined north vectors, and token circles. The browser E2E suite processes every image and compares local recognition with those records. See [FIXTURE_GUIDE.md](FIXTURE_GUIDE.md) for the schema and review workflow.
 
 ## Deployment previews
 

@@ -13,3 +13,7 @@ what is the image processing/recognition approach implemented so far? In practic
 ok. In assets/examples, I have added a series of photos that more accurately reflects the intended reality. Photos are at different angles; the position and directionality of the text card is arbitrary but defines which way is "up" for the constellation; and the constellations are coloured tokens on a black background. Let's make a new route in our dev server called "fixtures" that will display these fixtures and generate a .json record for each that records the correct/expected output for each -- perhaps draw a circle around each star, a bounding box around the text, and an arrow indicating "north/up". Then I'll review the fixtures route to ensure that our test data are correctly annotated before we rewrite the algorithm for these examples. You may move and resize the images as desirable to incorporate them wherever you feel makes sense to build up a regressoin test data set.
 
 The north arrow should always point straight up relative to the bounding box. Teh bounding bos should be constrained to be an actual rectangle not an arbitrary quadrilateral. Let's put up those updates for inspection
+
+OK I hvae updated the fixtures. Do we have tests that validate recognition handles these images now? do they still pass with my changes to the fixture json?
+
+fix the files, the editor, add the real test, and then make it green.
