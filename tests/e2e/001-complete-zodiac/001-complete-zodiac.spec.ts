@@ -17,6 +17,7 @@ test('a complete six-card game becomes a shareable Zodiac', async ({ page }, tes
     'Complete local Zodiac journey',
     'Six realistic gameplay photographs are read locally, confirmed, composed into the approved Zodiac artwork, persisted, and handed to the platform share action.'
   );
+  await page.clock.setFixedTime(new Date('2026-09-01T12:00:00-04:00'));
   const outsideRequests: string[] = [];
   page.on('request', (request) => {
     const url = new URL(request.url());

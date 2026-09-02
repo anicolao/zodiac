@@ -80,6 +80,8 @@ Never manually manage counters, screenshot names, or duplicate verification pros
 - update action that navigates to an application-generated cache-busting build URL;
 - service-worker offline reload followed by uncached-in-memory OCR of a fixture.
 
+The generated photographs above remain end-to-end product-flow fixtures. The separately reviewed real-photo corpus under `tests/fixtures/real/` is the recognition regression source of truth once each record is marked approved; see `FIXTURE_GUIDE.md`.
+
 ## 7. Commands
 
 ```sh

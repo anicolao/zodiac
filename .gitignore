@@ -3,6 +3,7 @@ node_modules/
 build/
 static/ocr/
 /static/build.json
+/assets/examples/IMG_*.jpg
 playwright-report/
 test-results/
 .DS_Store

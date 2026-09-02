@@ -1,6 +1,7 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import { execFileSync } from 'node:child_process';
+import { fixtureDevServer } from './src/lib/fixture-dev-server.js';
 
 function buildHash() {
   if (process.env.VITE_GIT_HASH?.trim()) return process.env.VITE_GIT_HASH.trim();
@@ -12,7 +13,7 @@ function buildHash() {
 }
 
 export default defineConfig({
-  plugins: [sveltekit()],
+  plugins: [fixtureDevServer(), sveltekit()],
   define: {
     'import.meta.env.VITE_GIT_HASH': JSON.stringify(buildHash())
   }

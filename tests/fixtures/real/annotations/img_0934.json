@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "img_0934",
+  "reviewStatus": "draft",
+  "image": { "file": "img_0934.jpg", "width": 1200, "height": 1600, "source": "assets/examples/IMG_0934.jpg" },
+  "expected": {
+    "cardLabel": "TRUNK",
+    "textRegion": { "corners": [{ "x": 0.576, "y": 0.103 }, { "x": 0.785, "y": 0.141 }, { "x": 0.774, "y": 0.181 }, { "x": 0.565, "y": 0.144 }] },
+    "north": { "origin": { "x": 0.675, "y": 0.143 }, "target": { "x": 0.689, "y": 0.074 } },
+    "stars": [
+      { "id": "gold-1", "color": "gold", "center": { "x": 0.474, "y": 0.552 }, "radius": 0.03 },
+      { "id": "red-1", "color": "red", "center": { "x": 0.296, "y": 0.611 }, "radius": 0.045 },
+      { "id": "gold-2", "color": "gold", "center": { "x": 0.26, "y": 0.771 }, "radius": 0.03 },
+      { "id": "gold-3", "color": "gold", "center": { "x": 0.705, "y": 0.778 }, "radius": 0.03 }
+    ]
+  }
+}
