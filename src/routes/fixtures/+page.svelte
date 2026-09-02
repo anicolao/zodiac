@@ -7,24 +7,25 @@
   type StarColor = 'gold' | 'red';
   type ReviewStatus = 'draft' | 'approved';
   type FixtureStar = { id: string; color: StarColor; center: Point; radius: number };
+  type TextRegion = { center: Point; width: number; height: number; rotationDegrees: number };
   type FixtureAnnotation = {
-    schemaVersion: 1;
+    schemaVersion: 2;
     id: string;
     reviewStatus: ReviewStatus;
     image: { file: string; width: number; height: number; source: string };
     expected: {
       cardLabel: string;
-      textRegion: { corners: Point[] };
-      north: { origin: Point; target: Point };
+      textRegion: TextRegion;
       stars: FixtureStar[];
     };
   };
   type DragTarget =
     | { kind: 'star-center'; starId: string }
     | { kind: 'star-radius'; starId: string }
-    | { kind: 'text-corner'; corner: number }
-    | { kind: 'north-origin' }
-    | { kind: 'north-target' };
+    | { kind: 'text-center' }
+    | { kind: 'text-width' }
+    | { kind: 'text-height' }
+    | { kind: 'text-rotation' };
   type Tool = 'select' | 'add-gold' | 'add-red';
 
   const apiRoot = `${base}/__fixtures`;
@@ -126,12 +127,28 @@
         const pixelY = (point.y - star.center.y) * selected.image.height;
         star.radius = Math.max(0.008, Math.min(0.12, Math.hypot(pixelX, pixelY) / selected.image.width));
       }
-    } else if (target.kind === 'text-corner') {
-      selected.expected.textRegion.corners[target.corner] = point;
-    } else if (target.kind === 'north-origin') {
-      selected.expected.north.origin = point;
-    } else if (target.kind === 'north-target') {
-      selected.expected.north.target = point;
+    } else if (target.kind === 'text-center') {
+      selected.expected.textRegion.center = point;
+    } else {
+      const region = selected.expected.textRegion;
+      const centerX = region.center.x * selected.image.width;
+      const centerY = region.center.y * selected.image.height;
+      const pointerX = point.x * selected.image.width;
+      const pointerY = point.y * selected.image.height;
+      const rotation = region.rotationDegrees * Math.PI / 180;
+      const right = { x: Math.cos(rotation), y: Math.sin(rotation) };
+      const down = { x: -Math.sin(rotation), y: Math.cos(rotation) };
+      const delta = { x: pointerX - centerX, y: pointerY - centerY };
+      if (target.kind === 'text-width') {
+        const projected = Math.abs(delta.x * right.x + delta.y * right.y);
+        region.width = Math.max(0.025, Math.min(0.8, projected * 2 / selected.image.width));
+      } else if (target.kind === 'text-height') {
+        const projected = Math.abs(delta.x * down.x + delta.y * down.y);
+        region.height = Math.max(0.018, Math.min(0.5, projected * 2 / selected.image.width));
+      } else if (target.kind === 'text-rotation') {
+        const northAngle = Math.atan2(delta.y, delta.x) * 180 / Math.PI;
+        region.rotationDegrees = ((northAngle + 90 + 180) % 360) - 180;
+      }
     }
     changed();
   }
@@ -209,10 +226,35 @@
     URL.revokeObjectURL(url);
   }
 
-  function polygonPoints(fixture: FixtureAnnotation) {
-    return fixture.expected.textRegion.corners
-      .map((point) => `${point.x * fixture.image.width},${point.y * fixture.image.height}`)
-      .join(' ');
+  function rectangleGeometry(fixture: FixtureAnnotation) {
+    const region = fixture.expected.textRegion;
+    const center = { x: region.center.x * fixture.image.width, y: region.center.y * fixture.image.height };
+    const halfWidth = region.width * fixture.image.width / 2;
+    const halfHeight = region.height * fixture.image.width / 2;
+    const rotation = region.rotationDegrees * Math.PI / 180;
+    const right = { x: Math.cos(rotation), y: Math.sin(rotation) };
+    const down = { x: -Math.sin(rotation), y: Math.cos(rotation) };
+    const offset = (rightAmount: number, downAmount: number) => ({
+      x: center.x + right.x * rightAmount + down.x * downAmount,
+      y: center.y + right.y * rightAmount + down.y * downAmount
+    });
+    const corners = [
+      offset(-halfWidth, -halfHeight),
+      offset(halfWidth, -halfHeight),
+      offset(halfWidth, halfHeight),
+      offset(-halfWidth, halfHeight)
+    ];
+    const northOrigin = offset(0, -halfHeight);
+    const northTarget = offset(0, -halfHeight - Math.max(60, halfHeight * 1.2));
+    return {
+      center,
+      corners,
+      points: corners.map((point) => `${point.x},${point.y}`).join(' '),
+      widthHandle: offset(halfWidth, 0),
+      heightHandle: offset(0, halfHeight),
+      northOrigin,
+      northTarget
+    };
   }
 </script>
 
@@ -240,6 +282,7 @@
   {:else if !selected}
     <section class="empty-state" aria-live="polite"><p>Loading fixture records…</p></section>
   {:else}
+    {@const rectangle = rectangleGeometry(selected)}
     <div class="workspace">
       <aside class="fixture-list" aria-label="Fixture photographs">
         <div class="list-heading"><strong>{fixtures.length} fixtures</strong><span>{fixtures.filter((fixture) => fixture.reviewStatus === 'approved').length} approved</span></div>
@@ -286,42 +329,49 @@
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <rect class="interaction-surface" width={selected.image.width} height={selected.image.height} onpointerdown={addStar} />
 
-            <polygon class="text-region" points={polygonPoints(selected)} />
-            {#each selected.expected.textRegion.corners as corner, index}
-              <!-- svelte-ignore a11y_no_static_element_interactions -->
-              <circle
-                class="handle text-handle"
-                cx={corner.x * selected.image.width}
-                cy={corner.y * selected.image.height}
-                r="13"
-                onpointerdown={(event) => beginDrag(event, { kind: 'text-corner', corner: index })}
-              />
-            {/each}
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <polygon class="text-region" points={rectangle.points} onpointerdown={(event) => beginDrag(event, { kind: 'text-center' })} />
 
             <line
               class="north-line"
-              x1={selected.expected.north.origin.x * selected.image.width}
-              y1={selected.expected.north.origin.y * selected.image.height}
-              x2={selected.expected.north.target.x * selected.image.width}
-              y2={selected.expected.north.target.y * selected.image.height}
+              x1={rectangle.northOrigin.x}
+              y1={rectangle.northOrigin.y}
+              x2={rectangle.northTarget.x}
+              y2={rectangle.northTarget.y}
               marker-end="url(#north-arrow)"
             />
-            <text class="north-label" x={selected.expected.north.target.x * selected.image.width} y={selected.expected.north.target.y * selected.image.height - 22}>NORTH</text>
+            <text class="north-label" x={rectangle.northTarget.x} y={rectangle.northTarget.y - 22}>NORTH</text>
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <circle
-              class="handle north-handle"
-              cx={selected.expected.north.origin.x * selected.image.width}
-              cy={selected.expected.north.origin.y * selected.image.height}
+              class="handle text-center-handle"
+              cx={rectangle.center.x}
+              cy={rectangle.center.y}
               r="13"
-              onpointerdown={(event) => beginDrag(event, { kind: 'north-origin' })}
+              onpointerdown={(event) => beginDrag(event, { kind: 'text-center' })}
             />
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <circle
-              class="handle north-handle"
-              cx={selected.expected.north.target.x * selected.image.width}
-              cy={selected.expected.north.target.y * selected.image.height}
+              class="handle width-handle"
+              cx={rectangle.widthHandle.x}
+              cy={rectangle.widthHandle.y}
               r="13"
-              onpointerdown={(event) => beginDrag(event, { kind: 'north-target' })}
+              onpointerdown={(event) => beginDrag(event, { kind: 'text-width' })}
+            />
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <circle
+              class="handle height-handle"
+              cx={rectangle.heightHandle.x}
+              cy={rectangle.heightHandle.y}
+              r="13"
+              onpointerdown={(event) => beginDrag(event, { kind: 'text-height' })}
+            />
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <circle
+              class="handle rotation-handle"
+              cx={rectangle.northTarget.x}
+              cy={rectangle.northTarget.y}
+              r="15"
+              onpointerdown={(event) => beginDrag(event, { kind: 'text-rotation' })}
             />
 
             {#each selected.expected.stars as star}
@@ -375,8 +425,19 @@
             </dl>
             <div class="object-actions"><button onclick={toggleSelectedColor}>Toggle color</button><button class="danger" onclick={removeSelectedStar}>Delete</button></div>
           {:else}
-            <p>Select a token circle to move, resize, recolor, or delete it. Drag cyan handles to correct text and north.</p>
+            <p>Select a token circle to move, resize, recolor, or delete it. The cyan rectangle stays rectangular: drag its center, right edge, bottom edge, or NORTH rotation handle.</p>
           {/if}
+        </div>
+
+        <div class="selected-object rectangle-details">
+          <h3>Text rectangle</h3>
+          <dl>
+            <div><dt>Center</dt><dd>{selected.expected.textRegion.center.x.toFixed(4)}, {selected.expected.textRegion.center.y.toFixed(4)}</dd></div>
+            <div><dt>Width</dt><dd>{selected.expected.textRegion.width.toFixed(4)}</dd></div>
+            <div><dt>Height</dt><dd>{selected.expected.textRegion.height.toFixed(4)}</dd></div>
+            <div><dt>Rotation</dt><dd>{selected.expected.textRegion.rotationDegrees.toFixed(2)}°</dd></div>
+          </dl>
+          <p>North is derived from rotation and is always perpendicular to the rectangle’s top edge.</p>
         </div>
 
         <div class="save-actions">
@@ -425,14 +486,14 @@
   .image-stage { overflow:hidden; width:min(100%,720px); margin:0 auto; border:1px solid #30475e; border-radius:10px; background:#02070c; box-shadow:inset 0 0 30px #000; } .image-stage.adding { cursor:crosshair; }
   svg { display:block; width:100%; height:auto; touch-action:none; user-select:none; }
   .interaction-surface { fill:transparent; }
-  .text-region { fill:#5ce1ff26; stroke:#63e6ff; stroke-width:6; stroke-dasharray:18 10; vector-effect:non-scaling-stroke; }
+  .text-region { fill:#5ce1ff26; stroke:#63e6ff; stroke-width:6; stroke-dasharray:18 10; vector-effect:non-scaling-stroke; cursor:move; }
   .north-line { stroke:#63e6ff; stroke-width:7; vector-effect:non-scaling-stroke; } .north-label { fill:#63e6ff; font-size:28px; font-weight:900; text-anchor:middle; paint-order:stroke; stroke:#06101b; stroke-width:8px; }
   .star-circle { fill:#06101b55; stroke-width:7; vector-effect:non-scaling-stroke; cursor:grab; } .star-circle.gold { stroke:#ffe16a; } .star-circle.red { stroke:#ff665e; } .star-circle.selected { fill:#fff3; stroke-width:11; }
-  .handle { stroke:#06101b; stroke-width:5; vector-effect:non-scaling-stroke; cursor:grab; } .text-handle,.north-handle { fill:#63e6ff; } .radius-handle { fill:#fff; } .radius-guide { stroke:#fff; stroke-width:4; stroke-dasharray:10 8; vector-effect:non-scaling-stroke; }
+  .handle { stroke:#06101b; stroke-width:5; vector-effect:non-scaling-stroke; cursor:grab; } .text-center-handle { fill:#63e6ff; } .width-handle { fill:#f4c24d; } .height-handle { fill:#ff9c96; } .rotation-handle { fill:#63e6ff; } .radius-handle { fill:#fff; } .radius-guide { stroke:#fff; stroke-width:4; stroke-dasharray:10 8; vector-effect:non-scaling-stroke; }
   .legend { display:flex; margin:11px 0 0; align-items:center; justify-content:center; gap:7px; flex-wrap:wrap; color:#aebccc; font-size:.72rem; } .legend span { display:inline-block; margin-left:8px; } .text-key { width:20px; border-top:3px dashed #63e6ff; } .north-key { color:#63e6ff; font-size:1.2rem; } .gold-key,.red-key { width:13px; height:13px; border:3px solid; border-radius:50%; } .gold-key { border-color:#ffe16a!important; } .red-key { border-color:#ff665e!important; }
   .inspector { padding:16px; position:sticky; top:14px; }
   label { display:block; margin-bottom:13px; color:#acbdcd; font-size:.76rem; font-weight:800; letter-spacing:.04em; } input,select { display:block; width:100%; min-height:44px; margin-top:6px; padding:9px 10px; border:1px solid #405870; border-radius:8px; background:#06121e; color:#fff; }
-  .selected-object { margin:18px 0; padding:14px; border:1px solid #2b4257; border-radius:10px; background:#071522; } .selected-object h3 { margin-bottom:10px; color:#f4c24d; font-size:.88rem; } .selected-object p { margin:0; color:#99aabc; font-size:.78rem; line-height:1.5; }
+  .selected-object { margin:18px 0; padding:14px; border:1px solid #2b4257; border-radius:10px; background:#071522; } .selected-object h3 { margin-bottom:10px; color:#f4c24d; font-size:.88rem; } .selected-object p { margin:0; color:#99aabc; font-size:.78rem; line-height:1.5; } .rectangle-details { margin-top:-8px; } .rectangle-details p { margin-top:10px; }
   dl { margin:0; font-size:.75rem; } dl div { display:flex; justify-content:space-between; gap:12px; padding:4px 0; } dt { color:#8fa2b5; } dd { margin:0; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
   .object-actions,.save-actions { display:flex; margin-top:12px; gap:7px; flex-wrap:wrap; } .object-actions button { min-height:36px; font-size:.72rem; } button.danger { border-color:#7b3737; color:#ff9c96; }
   .save-actions .primary { border-color:#f4c24d; background:#f4c24d; color:#15202b; font-weight:900; } button:disabled { opacity:.42; cursor:not-allowed; }

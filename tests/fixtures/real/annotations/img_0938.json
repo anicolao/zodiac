@@ -1,12 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "img_0938",
   "reviewStatus": "draft",
   "image": { "file": "img_0938.jpg", "width": 1200, "height": 1600, "source": "assets/examples/IMG_0938.jpg" },
   "expected": {
     "cardLabel": "FIRE",
-    "textRegion": { "corners": [{ "x": 0.376, "y": 0.137 }, { "x": 0.48, "y": 0.139 }, { "x": 0.478, "y": 0.176 }, { "x": 0.374, "y": 0.174 }] },
-    "north": { "origin": { "x": 0.427, "y": 0.157 }, "target": { "x": 0.429, "y": 0.088 } },
+    "textRegion": { "center": { "x": 0.427, "y": 0.1565 }, "width": 0.104, "height": 0.0494, "rotationDegrees": 1.47 },
     "stars": [
       { "id": "red-1", "color": "red", "center": { "x": 0.498, "y": 0.507 }, "radius": 0.045 },
       { "id": "red-2", "color": "red", "center": { "x": 0.462, "y": 0.618 }, "radius": 0.045 },

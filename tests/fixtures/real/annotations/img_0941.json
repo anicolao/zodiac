@@ -1,12 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "img_0941",
   "reviewStatus": "draft",
   "image": { "file": "img_0941.jpg", "width": 1200, "height": 1600, "source": "assets/examples/IMG_0941.jpg" },
   "expected": {
     "cardLabel": "PARTY",
-    "textRegion": { "corners": [{ "x": 0.37, "y": 0.255 }, { "x": 0.492, "y": 0.238 }, { "x": 0.501, "y": 0.268 }, { "x": 0.379, "y": 0.285 }] },
-    "north": { "origin": { "x": 0.436, "y": 0.261 }, "target": { "x": 0.424, "y": 0.192 } },
+    "textRegion": { "center": { "x": 0.4355, "y": 0.2615 }, "width": 0.1241, "height": 0.041, "rotationDegrees": -10.53 },
     "stars": [
       { "id": "gold-1", "color": "gold", "center": { "x": 0.569, "y": 0.444 }, "radius": 0.03 },
       { "id": "red-1", "color": "red", "center": { "x": 0.48, "y": 0.529 }, "radius": 0.045 },

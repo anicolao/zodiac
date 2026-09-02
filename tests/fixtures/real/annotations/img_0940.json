@@ -1,12 +1,11 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "img_0940",
   "reviewStatus": "draft",
   "image": { "file": "img_0940.jpg", "width": 1200, "height": 1600, "source": "assets/examples/IMG_0940.jpg" },
   "expected": {
     "cardLabel": "ACCORDION",
-    "textRegion": { "corners": [{ "x": 0.408, "y": 0.29 }, { "x": 0.621, "y": 0.29 }, { "x": 0.621, "y": 0.329 }, { "x": 0.408, "y": 0.329 }] },
-    "north": { "origin": { "x": 0.515, "y": 0.31 }, "target": { "x": 0.515, "y": 0.24 } },
+    "textRegion": { "center": { "x": 0.5145, "y": 0.3095 }, "width": 0.213, "height": 0.052, "rotationDegrees": 0 },
     "stars": [
       { "id": "red-1", "color": "red", "center": { "x": 0.221, "y": 0.449 }, "radius": 0.045 },
       { "id": "red-2", "color": "red", "center": { "x": 0.525, "y": 0.571 }, "radius": 0.045 },
