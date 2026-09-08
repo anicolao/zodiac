@@ -92,6 +92,20 @@ test('the reviewed real photographs are recognized locally', async ({ page }, te
       rotationDegrees: Number(node.getAttribute('data-rotation-degrees'))
     }));
     const matched = matchStars(fixture.expected.stars, actualStars);
+    const overlayError = await page.locator('.detected-star').evaluateAll((nodes) => {
+      const image = document.querySelector<HTMLImageElement>('.photo-frame img');
+      if (!image) throw new Error('Photo preview is unavailable.');
+      const imageBounds = image.getBoundingClientRect();
+      return Math.max(...nodes.map((node) => {
+        const bounds = node.getBoundingClientRect();
+        const x = Number(node.getAttribute('data-star-x'));
+        const y = Number(node.getAttribute('data-star-y'));
+        return Math.hypot(
+          bounds.left + bounds.width / 2 - (imageBounds.left + x * imageBounds.width),
+          bounds.top + bounds.height / 2 - (imageBounds.top + y * imageBounds.height)
+        );
+      }));
+    });
     const expectedGold = fixture.expected.stars.filter((star) => star.color === 'gold').length;
     const expectedRed = fixture.expected.stars.filter((star) => star.color === 'red').length;
 
@@ -108,6 +122,9 @@ test('the reviewed real photographs are recognized locally', async ({ page }, te
         { spec: 'Every token center and physical radius matches the reviewed annotation', check: async () => {
           expect(Math.max(...matched.map(({ centerError }) => centerError))).toBeLessThanOrEqual(0.022);
           expect(Math.max(...matched.map(({ radiusError }) => radiusError))).toBeLessThanOrEqual(0.022);
+        } },
+        { spec: 'Every confirmation marker is centred on its detected image coordinate', check: async () => {
+          expect(overlayError).toBeLessThanOrEqual(1);
         } },
         { spec: 'The text location and card-defined north match the reviewed annotation', check: async () => {
           expect(Math.hypot(
