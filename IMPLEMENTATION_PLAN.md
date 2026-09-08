@@ -2,13 +2,13 @@
 
 ## Outcome
 
-Deliver the MVP as the repository's first pull request: an installable Svelte SPA that turns exactly six gameplay photographs into the approved square Zodiac, with printed card-name OCR, token color/position/size reproduction, local persistence, offline operation, and one-tap sharing.
+Deliver an installable Svelte SPA that turns exactly six gameplay photographs into the approved square Zodiac, with numbered-card and die OCR, token color/position reproduction, local persistence, offline operation, and one-tap sharing.
 
 ## Locked product decisions
 
 - One game produces six captures and six chart sectors.
-- Every sector name originates from the printed card visible in its photograph.
-- Red/gold token color, normalized position, and relative physical size are recorded and reproduced.
+- Every sector name is the blue word whose gold row number matches the upward white number on the photographed black die.
+- Red/gold token color and normalized position are recorded; every constellation expands uniformly to a common safe span and output star size is standardized by color.
 - `zodiac.png` is the approved art reference.
 - Capture normalization, OCR, token detection, persistence, rendering, and export remain local to the device.
 
@@ -34,7 +34,8 @@ No backend, user account, analytics SDK, CDN runtime dependency, cloud OCR, or i
 - [x] Implement system camera/photo selection.
 - [x] Normalize orientation and re-encode without source EXIF/GPS.
 - [x] Bundle worker, engine, and English OCR data locally.
-- [x] Detect the physical card boundary and OCR its printed interior.
+- [x] Orient the card above the constellation, OCR all six blue words, read the black die, and select only its numbered word.
+- [x] Reject missing-card captures without surfacing OCR gibberish.
 - [x] Detect red/gold tokens and record x/y/size/confidence.
 - [x] Present inspectable overlays and correction controls.
 
@@ -43,7 +44,7 @@ No backend, user account, analytics SDK, CDN runtime dependency, cloud OCR, or i
 - [x] Persist one recoverable session and sanitized blobs in IndexedDB.
 - [x] Support exactly six accepted photographs and retakes.
 - [x] Render the approved navy/gold six-sector chart at 2048×2048.
-- [x] Preserve confirmed labels, colors, relative positions, and token sizes.
+- [x] Preserve confirmed labels, colors, and relative geometry while standardizing sector fill and star size by color.
 - [x] Restore the completed output after reload.
 - [x] Atomically archive each completed PNG and summary in a versioned local Game history.
 - [x] Recover, save, and reshare historical Zodiacs without retaining their source photographs.
@@ -64,7 +65,7 @@ No backend, user account, analytics SDK, CDN runtime dependency, cloud OCR, or i
 ### 5. Verification and review — complete for PR 1
 
 - [x] Type-check and production-build gates.
-- [x] Unit tests for color classification, OCR cleanup, and size-preserving sector mapping.
+- [x] Unit tests for color classification, OCR cleanup, geometry-preserving sector mapping, consistent per-color size, and card-above orientation.
 - [x] Playwright unified-step helper and generated scenario READMEs.
 - [x] Zero-pixel phone and desktop visual baselines.
 - [x] Complete six-fixture start-to-share test with no external requests.
@@ -76,11 +77,11 @@ No backend, user account, analytics SDK, CDN runtime dependency, cloud OCR, or i
 - [x] E2E coverage for current, update-available, offline, and internally cache-busted refresh states.
 - [ ] Real iPhone Safari and Home Screen smoke test by the reviewer.
 - [ ] Share-sheet test on a physical iPhone.
-- [ ] Warm/dim/angled real-game fixture expansion after first field use.
+- [x] Add 12 field photographs covering numbered cards, dice, angled, quarter-turn, upside-down, and missing-card cases.
 
 ## Acceptance gates
 
-The first PR is ready for review when all of the following pass:
+Each review PR is ready when all of the following pass:
 
 ```sh
 npm run check
@@ -94,7 +95,7 @@ Product acceptance additionally requires a physical iPhone run confirming Home S
 ## Known trade-offs
 
 - The local OCR engine adds roughly 9 MB of static assets. This is the privacy/offline cost of avoiding a server; the non-SIMD LSTM build is selected for broad compatibility and smaller caching cost.
-- The supported card layout places a high-contrast ivory card in the lower portion of the frame. Other layouts are intentionally out of scope.
+- The supported layout is a high-contrast ivory portrait card with six gold-numbered blue words, placed above a black constellation mat, plus a nearby black die showing a white value from 1–6.
 - Token detection is calibrated to the game's red/gold glitter pieces and the capture guidance. Direct correction is available when lighting defeats segmentation.
 - The custom live camera mock-up remains product direction; PR 1 delegates capture to the iOS system camera for lifecycle reliability.
 

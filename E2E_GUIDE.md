@@ -76,7 +76,7 @@ Never manually manage counters, screenshot names, or duplicate verification pros
 
 - one full six-card game from Start through Share, active-session clearing, Game history recovery, and Share again;
 - photo-derived card names and exact red/gold counts;
-- visibly distinct token sizes and 2048×2048 output;
+- consistent per-color star sizes, uniformly filled constellations, and 2048×2048 output;
 - no external network request during recognition or rendering;
 - result restoration from IndexedDB after reload;
 - one compact completed-game history record that retains the PNG and summary without source photos;

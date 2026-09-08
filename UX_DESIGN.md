@@ -101,7 +101,8 @@ The captured frame replaces the live camera immediately. A short local-processin
 ### 5.4 Confirm capture
 
 - Display the normalized photo with gold/red outlines or numbered pins on detected stars.
-- Show the locally recognized printed card name in an editable field beside the photograph. Corrections must be grounded in the visible card; names are never suggested from filenames or a catalogue.
+- Rotate analysis into the card-above-constellation orientation, read all six blue words and the upward black-die value, and show only the corresponding word in the editable field beside the photograph. Never include the gold row number. Corrections must be grounded in the visible card; names are never suggested from filenames or a catalogue.
+- If the card, six valid rows, or die value cannot be established, leave the field empty rather than displaying low-confidence OCR fragments.
 - State a plain result: **6 stars found**.
 - If confidence is high, primary **Keep photo** and secondary **Retake**.
 - If confidence is low, use **Check stars** as the primary action and explain the affected item: “One star may be hidden.”
@@ -114,7 +115,7 @@ The captured frame replaces the live camera immediately. A short local-processin
 - Tapping empty photo space adds a star and immediately asks Gold or Red.
 - Each star has shape/icon plus color so correction does not rely only on hue.
 - Undo remains visible until save.
-- Detection outlines scale with the measured token size, making the size translation inspectable before generation.
+- Detection outlines scale with measured image size so the capture remains inspectable; final artwork standardizes size within each color.
 - Primary: **Save corrections**; secondary: **Cancel** restores the last accepted structured data.
 - Pinch zoom may help but cannot be required; provide zoom buttons for accessibility.
 
