@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { mapStarToSector, normalizeComparableTokenSizes, orientStarsToCardNorth } from '../../src/lib/render';
+import { mapStarToSector, normalizeComparableTokenSizes, orientStarsToCardNorth, ZODIAC_LABEL_FONT_SIZE } from '../../src/lib/render';
 
 describe('Zodiac sector mapping', () => {
+  it('renders card labels large enough to read in a phone-sized preview', () => {
+    expect(ZODIAC_LABEL_FONT_SIZE).toBeGreaterThanOrEqual(56);
+  });
   it('preserves relative token size in the final art', () => {
     const small = mapStarToSector({ x: 0.5, y: 0.5, size: 0.06, color: 'gold' }, 0, 1024, 900);
     const large = mapStarToSector({ x: 0.5, y: 0.5, size: 0.14, color: 'red' }, 0, 1024, 900);

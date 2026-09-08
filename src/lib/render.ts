@@ -2,6 +2,7 @@ import type { Capture, DetectedStar, GameSession } from './types';
 import { homographyToUnitSquare, projectPoint } from './geometry';
 
 export const OUTPUT_SIZE = 2048;
+export const ZODIAC_LABEL_FONT_SIZE = 56;
 const GOLD = '#f3b83f';
 const RED = '#d83b2d';
 const NIGHT = '#031426';
@@ -156,7 +157,7 @@ function drawArcLabel(
     ? sectorCenter + ((letters.length - 1) * spacing) / 2
     : sectorCenter - ((letters.length - 1) * spacing) / 2;
   context.fillStyle = GOLD;
-  context.font = '600 42px Georgia, serif';
+  context.font = `600 ${ZODIAC_LABEL_FONT_SIZE}px Georgia, serif`;
   context.textAlign = 'center';
   context.textBaseline = 'middle';
   for (let index = 0; index < letters.length; index += 1) {
