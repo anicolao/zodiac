@@ -3,6 +3,7 @@ import { homographyToUnitSquare, projectPoint } from './geometry';
 
 export const OUTPUT_SIZE = 2048;
 export const ZODIAC_LABEL_FONT_SIZE = 56;
+export const ZODIAC_STAR_RADIUS = { gold: 38, red: 52 } as const;
 const GOLD = '#f3b83f';
 const RED = '#d83b2d';
 const NIGHT = '#031426';
@@ -14,34 +15,11 @@ export interface RenderedStar {
   color: string;
 }
 
-export function normalizeComparableTokenSizes(stars: DetectedStar[]): DetectedStar[] {
-  const medians = new Map<string, number>();
-  for (const color of ['gold', 'red'] as const) {
-    const sizes = stars.filter((star) => star.color === color).map((star) => star.size).sort((left, right) => left - right);
-    if (sizes.length) medians.set(color, sizes[Math.floor(sizes.length / 2)]);
-  }
-  return stars.map((star) => {
-    const median = medians.get(star.color) ?? star.size;
-    return Math.abs(star.size - median) / Math.max(median, 0.001) <= 0.35
-      ? { ...star, size: median }
-      : star;
-  });
-}
-
-function rectifyStars(capture: Pick<Capture, 'stars' | 'capturePlane' | 'imageAspectRatio'>): DetectedStar[] {
+function rectifyStars(capture: Pick<Capture, 'stars' | 'capturePlane'>): DetectedStar[] {
   if (!capture.capturePlane) return capture.stars;
   const homography = homographyToUnitSquare(capture.capturePlane);
   if (!homography) return capture.stars;
-  const aspectRatio = capture.imageAspectRatio ?? 1;
-  const corrected = capture.stars.map((star) => {
-    const center = projectPoint(homography, star);
-    const horizontal = projectPoint(homography, { x: star.x + star.size / 2, y: star.y });
-    const vertical = projectPoint(homography, { x: star.x, y: star.y + star.size * aspectRatio / 2 });
-    const correctedSize = Math.hypot(horizontal.x - center.x, horizontal.y - center.y) +
-      Math.hypot(vertical.x - center.x, vertical.y - center.y);
-    return { ...star, ...center, size: correctedSize };
-  });
-  return normalizeComparableTokenSizes(corrected);
+  return capture.stars.map((star) => ({ ...star, ...projectPoint(homography, star) }));
 }
 
 function rectifiedCardRotation(capture: Pick<Capture, 'cardRotationDegrees' | 'cardTextCenter' | 'capturePlane' | 'imageAspectRatio'>): number | undefined {
@@ -59,15 +37,24 @@ function rectifiedCardRotation(capture: Pick<Capture, 'cardRotationDegrees' | 'c
   return Math.atan2(direction.y - center.y, direction.x - center.x) * 180 / Math.PI;
 }
 
-export function orientStarsToCardNorth(capture: Pick<Capture, 'stars' | 'cardRotationDegrees' | 'cardTextCenter' | 'capturePlane' | 'imageAspectRatio'>): DetectedStar[] {
-  if (capture.cardRotationDegrees === undefined || capture.stars.length < 2) {
+function cardAboveRotation(capture: Pick<Capture, 'cardCenter' | 'capturePlane'>): number | undefined {
+  if (!capture.cardCenter || !capture.capturePlane) return undefined;
+  const homography = homographyToUnitSquare(capture.capturePlane);
+  if (!homography) return undefined;
+  const card = projectPoint(homography, capture.cardCenter);
+  const angle = Math.atan2(card.y - 0.5, card.x - 0.5);
+  return -Math.PI / 2 - angle;
+}
+
+export function orientStarsToCardNorth(capture: Pick<Capture, 'stars' | 'cardRotationDegrees' | 'cardTextCenter' | 'cardCenter' | 'capturePlane' | 'imageAspectRatio'>): DetectedStar[] {
+  if (capture.stars.length < 2) {
     return capture.stars;
   }
   const stars = rectifyStars(capture);
   const centerX = stars.reduce((sum, star) => sum + star.x, 0) / stars.length;
   const centerY = stars.reduce((sum, star) => sum + star.y, 0) / stars.length;
   const aspectRatio = capture.capturePlane ? 1 : capture.imageAspectRatio ?? 1;
-  const rotation = -(rectifiedCardRotation(capture) ?? 0) * Math.PI / 180;
+  const rotation = cardAboveRotation(capture) ?? -(rectifiedCardRotation(capture) ?? 0) * Math.PI / 180;
   const cosine = Math.cos(rotation);
   const sine = Math.sin(rotation);
   const rotated = stars.map((star) => {
@@ -84,8 +71,8 @@ export function orientStarsToCardNorth(capture: Pick<Capture, 'stars' | 'cardRot
   const midpointY = (minY + maxY) / 2;
   return rotated.map(({ star, x, y }) => ({
     ...star,
-    x: 0.5 + (x - midpointX) / span * 0.72,
-    y: 0.5 + (y - midpointY) / span * 0.72
+    x: 0.5 + (x - midpointX) / span * 0.78,
+    y: 0.5 + (y - midpointY) / span * 0.78
   }));
 }
 
@@ -103,7 +90,7 @@ export function mapStarToSector(
   return {
     x: center + radialX * radialDistance - radialY * tangentDistance,
     y: center + radialY * radialDistance + radialX * tangentDistance,
-    radius: Math.max(9, Math.min(50, star.size * chartRadius * 0.34)),
+    radius: ZODIAC_STAR_RADIUS[star.color],
     color: star.color === 'red' ? RED : GOLD
   };
 }

@@ -1,17 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { mapStarToSector, normalizeComparableTokenSizes, orientStarsToCardNorth, ZODIAC_LABEL_FONT_SIZE } from '../../src/lib/render';
+import { mapStarToSector, orientStarsToCardNorth, ZODIAC_LABEL_FONT_SIZE, ZODIAC_STAR_RADIUS } from '../../src/lib/render';
+import type { CapturePlane } from '../../src/lib/types';
 
 describe('Zodiac sector mapping', () => {
   it('renders card labels large enough to read in a phone-sized preview', () => {
     expect(ZODIAC_LABEL_FONT_SIZE).toBeGreaterThanOrEqual(56);
   });
-  it('preserves relative token size in the final art', () => {
-    const small = mapStarToSector({ x: 0.5, y: 0.5, size: 0.06, color: 'gold' }, 0, 1024, 900);
-    const large = mapStarToSector({ x: 0.5, y: 0.5, size: 0.14, color: 'red' }, 0, 1024, 900);
-    expect(large.radius).toBeGreaterThan(small.radius * 2);
-    expect(large.radius).toBeLessThan(56);
-    expect(large.x).toBe(small.x);
-    expect(large.y).toBe(small.y);
+  it('uses one readable size for every token of each colour', () => {
+    const smallGold = mapStarToSector({ x: 0.5, y: 0.5, size: 0.03, color: 'gold' }, 0, 1024, 900);
+    const largeGold = mapStarToSector({ x: 0.5, y: 0.5, size: 0.2, color: 'gold' }, 0, 1024, 900);
+    const smallRed = mapStarToSector({ x: 0.5, y: 0.5, size: 0.03, color: 'red' }, 0, 1024, 900);
+    const largeRed = mapStarToSector({ x: 0.5, y: 0.5, size: 0.2, color: 'red' }, 0, 1024, 900);
+    expect(smallGold.radius).toBe(largeGold.radius);
+    expect(smallGold.radius).toBe(ZODIAC_STAR_RADIUS.gold);
+    expect(smallRed.radius).toBe(largeRed.radius);
+    expect(smallRed.radius).toBe(ZODIAC_STAR_RADIUS.red);
+    expect(smallRed.radius).toBeGreaterThan(smallGold.radius);
   });
 
   it('keeps tokens in the roomier outer portion of each sector', () => {
@@ -21,7 +25,7 @@ describe('Zodiac sector mapping', () => {
     const outer = mapStarToSector({ x: 0.5, y: 1, size: 0.06, color: 'gold' }, 0, center, chartRadius);
     expect(Math.hypot(inner.x - center, inner.y - center)).toBeCloseTo(chartRadius * 0.36);
     expect(Math.hypot(outer.x - center, outer.y - center)).toBeCloseTo(chartRadius * 0.86);
-    expect(inner.radius).toBeLessThan(24);
+    expect(inner.radius).toBe(ZODIAC_STAR_RADIUS.gold);
   });
 
   it('preserves a square constellation instead of narrowing its inner edge', () => {
@@ -58,14 +62,41 @@ describe('Zodiac sector mapping', () => {
     expect(stars[1].y).toBeGreaterThan(0.5);
   });
 
-  it('evens out perspective noise for same-colour tokens without losing distinct sizes', () => {
-    const stars = normalizeComparableTokenSizes([
-      { id: 'near', color: 'gold', x: 0, y: 0, size: 0.11, confidence: 1 },
-      { id: 'middle', color: 'gold', x: 0, y: 0, size: 0.1, confidence: 1 },
-      { id: 'far', color: 'gold', x: 0, y: 0, size: 0.08, confidence: 1 },
-      { id: 'large', color: 'gold', x: 0, y: 0, size: 0.2, confidence: 1 }
-    ]);
-    expect(stars.slice(0, 3).map(({ size }) => size)).toEqual([0.11, 0.11, 0.11]);
-    expect(stars[3].size).toBe(0.2);
+  it('uses the card-above-constellation rule for quarter-turn and upside-down photos', () => {
+    const plane: CapturePlane = { corners: [
+      { x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }
+    ] };
+    const sideways = orientStarsToCardNorth({
+      cardCenter: { x: 1.2, y: 0.5 },
+      capturePlane: plane,
+      stars: [
+        { id: 'north', color: 'gold', x: 0.8, y: 0.5, size: 0.06, confidence: 1 },
+        { id: 'south', color: 'gold', x: 0.2, y: 0.5, size: 0.06, confidence: 1 }
+      ]
+    });
+    const upsideDown = orientStarsToCardNorth({
+      cardCenter: { x: 0.5, y: 1.2 },
+      capturePlane: plane,
+      stars: [
+        { id: 'north', color: 'gold', x: 0.5, y: 0.8, size: 0.06, confidence: 1 },
+        { id: 'south', color: 'gold', x: 0.5, y: 0.2, size: 0.06, confidence: 1 }
+      ]
+    });
+    expect(sideways[0].y).toBeLessThan(sideways[1].y);
+    expect(upsideDown[0].y).toBeLessThan(upsideDown[1].y);
+  });
+
+  it('uniformly expands every multi-star constellation to the available span', () => {
+    const stars = orientStarsToCardNorth({
+      stars: [
+        { id: 'left', color: 'gold', x: 0.45, y: 0.48, size: 0.06, confidence: 1 },
+        { id: 'right', color: 'gold', x: 0.55, y: 0.52, size: 0.06, confidence: 1 }
+      ]
+    });
+    const span = Math.max(
+      Math.max(...stars.map(({ x }) => x)) - Math.min(...stars.map(({ x }) => x)),
+      Math.max(...stars.map(({ y }) => y)) - Math.min(...stars.map(({ y }) => y))
+    );
+    expect(span).toBeCloseTo(0.78);
   });
 });
