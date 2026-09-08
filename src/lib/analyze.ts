@@ -1,14 +1,15 @@
 import { detectConstellation } from './detect';
 import { normalizeImage } from './image';
-import { recognizeCard, type RecognizedTextRegion } from './ocr';
+import { recognizeCard, type RecognizedCard, type RecognizedTextRegion } from './ocr';
 
 export async function analyzePhotograph(file: Blob) {
   const normalized = await normalizeImage(file);
   const detection = detectConstellation(normalized.canvas);
   let cardLabel = '';
   let textRegion: RecognizedTextRegion | undefined;
+  let card: RecognizedCard | undefined;
   try {
-    const card = await recognizeCard(normalized.canvas);
+    card = await recognizeCard(normalized.canvas, detection.capturePlane);
     cardLabel = card.label;
     textRegion = card.textRegion;
   } catch (error) {
@@ -20,6 +21,9 @@ export async function analyzePhotograph(file: Blob) {
     stars: detection.stars,
     capturePlane: detection.capturePlane,
     cardLabel,
-    textRegion
+    textRegion,
+    cardCenter: card?.cardCenter,
+    dieValue: card?.dieValue,
+    cardWords: card?.words
   };
 }

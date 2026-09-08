@@ -25,6 +25,7 @@ export interface Capture {
   stars: DetectedStar[];
   cardRotationDegrees?: number;
   cardTextCenter?: Point;
+  cardCenter?: Point;
   capturePlane?: CapturePlane;
   imageAspectRatio?: number;
   acceptedAt: string;

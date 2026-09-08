@@ -27,7 +27,8 @@ tests/e2e/
 ├── 003-offline-capture/
 ├── 004-real-photo-recognition/
 ├── 005-clipped-card-ocr/
-└── 006-real-photo-zodiac/
+├── 006-real-photo-zodiac/
+└── 007-numbered-card-selection/
 ```
 
 `README.md` and screenshot numbering are produced by the scenario. Do not hand-maintain them.
@@ -83,7 +84,7 @@ Never manually manage counters, screenshot names, or duplicate verification pros
 - update action that navigates to an application-generated cache-busting build URL;
 - service-worker offline reload followed by uncached-in-memory OCR of a fixture.
 
-The generated photographs above remain end-to-end product-flow fixtures. The separately reviewed real-photo corpus under `tests/fixtures/real/` is also executable acceptance data: scenario 004 uploads all 14 JPEGs and checks OCR, token count/color/position/size, overlay alignment, play-surface detection, text location, card-defined north, and local-only networking against their JSON records. Scenario 005 proves a slightly clipped card remains readable. Scenario 006 completes a six-capture game with angled real photos and checks that every accepted capture carries the four-corner perspective reference used by the geometry-preserving renderer. See `FIXTURE_GUIDE.md`.
+The generated photographs above remain end-to-end product-flow fixtures. The separately reviewed real-photo corpus under `tests/fixtures/real/` is also executable acceptance data: scenario 004 uploads all 14 JPEGs and checks OCR, token count/color/position/size, overlay alignment, play-surface detection, text location, card-defined north, and local-only networking against their JSON records. Scenario 005 proves a slightly clipped card remains readable. Scenario 006 completes a six-capture game with angled real photos and checks that every accepted capture carries the four-corner perspective reference used by the geometry-preserving renderer. Scenario 007 processes all 12 numbered-card issue photos, including quarter-turn and upside-down captures, verifies six-word ordering and die selection, and rejects a card-free photograph without emitting OCR gibberish. See `FIXTURE_GUIDE.md`.
 
 ## 7. Commands
 
