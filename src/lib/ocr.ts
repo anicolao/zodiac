@@ -1,4 +1,5 @@
 import { createWorker, PSM, type Worker } from 'tesseract.js';
+import type { CapturePlane, Point } from './types';
 
 export interface RecognizedTextRegion {
   center: { x: number; y: number };
@@ -10,6 +11,9 @@ export interface RecognizedTextRegion {
 export interface RecognizedCard {
   label: string;
   textRegion?: RecognizedTextRegion;
+  cardCenter?: Point;
+  dieValue?: number;
+  words?: string[];
 }
 
 interface CardLocation {
@@ -304,14 +308,299 @@ function textCrop(aligned: HTMLCanvasElement, threshold: number) {
   return { canvas, sourceX, sourceY, sourceWidth, sourceHeight };
 }
 
-export async function recognizeCard(source: HTMLCanvasElement): Promise<RecognizedCard> {
-  const card = locateCard(source);
-  if (!card || card.width / source.width > 0.42) {
-    const recognizer = await worker();
-    await recognizer.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK });
-    const result = await recognizer.recognize(fallbackCardCrop(source));
-    return { label: normalizeCardLabel(result.data.text) };
+function pointInPolygon(point: Point, polygon: Point[]): boolean {
+  let inside = false;
+  for (let index = 0, previous = polygon.length - 1; index < polygon.length; previous = index++) {
+    const currentPoint = polygon[index];
+    const previousPoint = polygon[previous];
+    if (
+      (currentPoint.y > point.y) !== (previousPoint.y > point.y) &&
+      point.x < (previousPoint.x - currentPoint.x) * (point.y - currentPoint.y) /
+        (previousPoint.y - currentPoint.y || Number.EPSILON) + currentPoint.x
+    ) inside = !inside;
   }
+  return inside;
+}
+
+function listCardOrientation(source: HTMLCanvasElement, card: CardLocation, plane: CapturePlane) {
+  const matCenter = plane.corners.reduce((center, point) => ({
+    x: center.x + point.x / plane.corners.length,
+    y: center.y + point.y / plane.corners.length
+  }), { x: 0, y: 0 });
+  const cardCenter = { x: card.centerX, y: card.centerY };
+  const towardMat = {
+    x: matCenter.x * source.width - cardCenter.x,
+    y: matCenter.y * source.height - cardCenter.y
+  };
+  let downAngle = card.rotationDegrees * Math.PI / 180;
+  if (Math.cos(downAngle) * towardMat.x + Math.sin(downAngle) * towardMat.y < 0) downAngle += Math.PI;
+  const distance = Math.hypot(towardMat.x, towardMat.y) || 1;
+  const alignment = Math.abs((Math.cos(downAngle) * towardMat.x + Math.sin(downAngle) * towardMat.y) / distance);
+  return {
+    alignment,
+    rotationRadians: Math.PI / 2 - downAngle,
+  };
+}
+
+function alignedListCard(source: HTMLCanvasElement, card: CardLocation, rotationRadians: number) {
+  const width = 900;
+  const height = Math.round(width * card.width / card.height);
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
+  if (!context) return undefined;
+  const scale = width / (card.height * 1.08);
+  context.fillStyle = '#fff';
+  context.fillRect(0, 0, width, height);
+  context.translate(width / 2, height / 2);
+  context.rotate(rotationRadians);
+  context.scale(scale, scale);
+  context.drawImage(source, -card.centerX, -card.centerY);
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  return { canvas, scale };
+}
+
+function listTextCrop(aligned: HTMLCanvasElement, threshold: number) {
+  const sourceX = Math.round(aligned.width * 0.09);
+  const sourceY = Math.round(aligned.height * 0.1);
+  const sourceWidth = Math.round(aligned.width * 0.84);
+  const sourceHeight = Math.round(aligned.height * 0.82);
+  const canvas = document.createElement('canvas');
+  canvas.width = 1000;
+  canvas.height = Math.round(sourceHeight / sourceWidth * canvas.width);
+  const context = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
+  if (!context) return undefined;
+  context.drawImage(aligned, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+  const frame = context.getImageData(0, 0, canvas.width, canvas.height);
+  for (let index = 0; index < frame.data.length; index += 4) {
+    const red = frame.data[index];
+    const green = frame.data[index + 1];
+    const blue = frame.data[index + 2];
+    const luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+    const navy = luminance < threshold && blue > red * 1.04 && blue >= green * 0.82;
+    const value = navy ? 0 : 255;
+    frame.data[index] = value;
+    frame.data[index + 1] = value;
+    frame.data[index + 2] = value;
+  }
+  context.putImageData(frame, 0, 0);
+  return canvas;
+}
+
+function wordsFromBlocks(blocks: Awaited<ReturnType<Worker['recognize']>>['data']['blocks']): Array<{ text: string; confidence: number }> {
+  return blocks?.flatMap((block) => block.paragraphs)
+    .flatMap((paragraph) => paragraph.lines)
+    .map((line) => {
+      const recognized = line.words
+        .map((word) => ({ text: word.text.toUpperCase().replace(/[^A-Z]/g, ''), confidence: word.confidence }))
+        .filter(({ text }) => /^[A-Z]{3,16}$/.test(text))
+        .sort((left, right) => right.text.length - left.text.length || right.confidence - left.confidence);
+      return recognized[0] ?? { text: '', confidence: 0 };
+    })
+    .filter(({ text }) => /^[A-Z]{3,16}$/.test(text)) ?? [];
+}
+
+async function recognizeListWords(aligned: HTMLCanvasElement): Promise<Array<{ text: string; confidence: number }>> {
+  const recognizer = await worker();
+  await recognizer.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK });
+  const attempts: Array<Array<{ text: string; confidence: number }>> = [];
+  for (const threshold of [170, 145, 195]) {
+    const crop = listTextCrop(aligned, threshold);
+    if (!crop) continue;
+    const result = await recognizer.recognize(crop, {}, { text: true, blocks: true });
+    const words = wordsFromBlocks(result.data.blocks);
+    attempts.push(words);
+    if (words.length === 6 && words.every((word) => word.confidence >= 70)) break;
+  }
+  return attempts.sort((left, right) => {
+    const leftScore = (left.length === 6 ? 1000 : 0) + left.reduce((sum, word) => sum + word.confidence, 0);
+    const rightScore = (right.length === 6 ? 1000 : 0) + right.reduce((sum, word) => sum + word.confidence, 0);
+    return rightScore - leftScore;
+  })[0] ?? [];
+}
+
+interface DieLocation { centerX: number; centerY: number; size: number }
+
+function locateDie(source: HTMLCanvasElement, card: CardLocation, plane: CapturePlane): DieLocation | undefined {
+  const width = 360;
+  const height = Math.round(source.height / source.width * width);
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  if (!context) return undefined;
+  context.drawImage(source, 0, 0, width, height);
+  const pixels = context.getImageData(0, 0, width, height).data;
+  const mask = new Uint8Array(width * height);
+  const major = card.rotationDegrees * Math.PI / 180;
+  const majorX = Math.cos(major);
+  const majorY = Math.sin(major);
+  const minorX = -majorY;
+  const minorY = majorX;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const normalized = { x: x / width, y: y / height };
+      if (pointInPolygon(normalized, plane.corners)) continue;
+      const sourceX = x * source.width / width;
+      const sourceY = y * source.height / height;
+      const dx = sourceX - card.centerX;
+      const dy = sourceY - card.centerY;
+      if (Math.abs(dx * majorX + dy * majorY) < card.width * 0.58 && Math.abs(dx * minorX + dy * minorY) < card.height * 0.62) continue;
+      const index = y * width + x;
+      const red = pixels[index * 4];
+      const green = pixels[index * 4 + 1];
+      const blue = pixels[index * 4 + 2];
+      if (0.2126 * red + 0.7152 * green + 0.0722 * blue < 58 && Math.max(red, green, blue) < 90) mask[index] = 1;
+    }
+  }
+  const visited = new Uint8Array(mask.length);
+  const queue: number[] = [];
+  const candidates: Array<DieLocation & { score: number }> = [];
+  for (let start = 0; start < mask.length; start += 1) {
+    if (!mask[start] || visited[start]) continue;
+    visited[start] = 1;
+    queue.length = 0;
+    queue.push(start);
+    let minX = width;
+    let maxX = 0;
+    let minY = height;
+    let maxY = 0;
+    for (let cursor = 0; cursor < queue.length; cursor += 1) {
+      const index = queue[cursor];
+      const x = index % width;
+      const y = Math.floor(index / width);
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+      for (const neighbor of [index - 1, index + 1, index - width, index + width]) {
+        if (neighbor < 0 || neighbor >= mask.length || visited[neighbor] || !mask[neighbor]) continue;
+        if (Math.abs(neighbor % width - x) > 1) continue;
+        visited[neighbor] = 1;
+        queue.push(neighbor);
+      }
+    }
+    const area = queue.length;
+    const boxWidth = maxX - minX + 1;
+    const boxHeight = maxY - minY + 1;
+    const aspect = boxWidth / boxHeight;
+    const fill = area / (boxWidth * boxHeight);
+    if (area < 45 || area > 2600 || boxWidth < 8 || boxHeight < 8 || boxWidth > 72 || boxHeight > 72 || aspect < 0.45 || aspect > 2.2 || fill < 0.2) continue;
+    const centerX = (minX + maxX) / 2 * source.width / width;
+    const centerY = (minY + maxY) / 2 * source.height / height;
+    const distance = Math.hypot(centerX - card.centerX, centerY - card.centerY) / Math.max(source.width, source.height);
+    if (distance > 0.48) continue;
+    candidates.push({
+      centerX,
+      centerY,
+      size: Math.max(boxWidth * source.width / width, boxHeight * source.height / height),
+      score: area * fill * (1 - Math.min(0.8, Math.abs(Math.log(aspect)))) / (0.2 + distance)
+    });
+  }
+  return candidates.sort((left, right) => right.score - left.score)[0];
+}
+
+function alignedDieCrop(source: HTMLCanvasElement, die: DieLocation, rotationRadians: number) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 500;
+  canvas.height = 500;
+  const context = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
+  if (!context) return undefined;
+  const scale = canvas.width / (die.size * 1.45);
+  context.fillStyle = '#fff';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.translate(canvas.width / 2, canvas.height / 2);
+  context.rotate(rotationRadians);
+  context.scale(scale, scale);
+  context.drawImage(source, -die.centerX, -die.centerY);
+  return canvas;
+}
+
+function dieFaceCrop(die: HTMLCanvasElement, threshold: number) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 600;
+  canvas.height = 600;
+  const context = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
+  if (!context) return undefined;
+  context.drawImage(
+    die,
+    die.width * 0.18,
+    die.height * 0.12,
+    die.width * 0.6,
+    die.height * 0.56,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+  const frame = context.getImageData(0, 0, canvas.width, canvas.height);
+  for (let index = 0; index < frame.data.length; index += 4) {
+    const red = frame.data[index];
+    const green = frame.data[index + 1];
+    const blue = frame.data[index + 2];
+    const luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+    const value = luminance >= threshold ? 0 : 255;
+    frame.data[index] = value;
+    frame.data[index + 1] = value;
+    frame.data[index + 2] = value;
+  }
+  context.putImageData(frame, 0, 0);
+  return canvas;
+}
+
+async function recognizeDieValue(source: HTMLCanvasElement, card: CardLocation, plane: CapturePlane, rotationRadians: number): Promise<number | undefined> {
+  const die = locateDie(source, card, plane);
+  if (!die) return undefined;
+  const crop = alignedDieCrop(source, die, rotationRadians);
+  if (!crop) return undefined;
+  const recognizer = await worker();
+  await recognizer.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_CHAR, tessedit_char_whitelist: '123456' });
+  const attempts = [];
+  for (const threshold of [85, 110, 65]) {
+    const face = dieFaceCrop(crop, threshold);
+    if (!face) continue;
+    for (const correctionDegrees of [0, -10, 10]) {
+      const result = await recognizer.recognize(face, { rotateRadians: correctionDegrees * Math.PI / 180 });
+      const digit = Number(result.data.text.replace(/[^1-6]/g, '')[0]);
+      if (digit) attempts.push({ digit, confidence: result.data.confidence });
+    }
+  }
+  await recognizer.setParameters({ tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ ' });
+  return attempts.sort((left, right) => right.confidence - left.confidence)[0]?.digit;
+}
+
+async function recognizeListCard(source: HTMLCanvasElement, card: CardLocation, plane: CapturePlane, orientation: ReturnType<typeof listCardOrientation>): Promise<RecognizedCard> {
+  const aligned = alignedListCard(source, card, orientation.rotationRadians);
+  if (!aligned) return { label: '' };
+  const recognizedWords = await recognizeListWords(aligned.canvas);
+  const dieValue = await recognizeDieValue(source, card, plane, orientation.rotationRadians);
+  const words = recognizedWords.map(({ text }) => text);
+  const selected = dieValue ? recognizedWords[dieValue - 1] : undefined;
+  const confident = recognizedWords.length === 6 && (selected?.confidence ?? 0) >= 35;
+  const label = confident && dieValue ? words[dieValue - 1] ?? '' : '';
+  return {
+    label,
+    words,
+    dieValue,
+    cardCenter: { x: card.centerX / source.width, y: card.centerY / source.height },
+    textRegion: {
+      center: { x: card.centerX / source.width, y: card.centerY / source.height },
+      width: card.height / source.width,
+      height: card.width / source.width,
+      rotationDegrees: -orientation.rotationRadians * 180 / Math.PI
+    }
+  };
+}
+
+export async function recognizeCard(source: HTMLCanvasElement, plane?: CapturePlane): Promise<RecognizedCard> {
+  const card = locateCard(source);
+  if (!card) return { label: '' };
+  if (plane) {
+    const orientation = listCardOrientation(source, card, plane);
+    if (orientation.alignment >= 0.62) return recognizeListCard(source, card, plane, orientation);
+  }
+  if (card.width / source.width > 0.42) return { label: '' };
   const aligned = alignedCardCrop(source, card);
   if (!aligned) return { label: '', textRegion: undefined };
   const recognizer = await worker();
@@ -337,11 +626,7 @@ export async function recognizeCard(source: HTMLCanvasElement): Promise<Recogniz
     .sort((left, right) => right.result.data.confidence - left.result.data.confidence)[0] ?? attempts[0];
   if (!chosen) return { label: '', textRegion: undefined };
   const { cropped, result, label } = chosen;
-  if (!label) {
-    await recognizer.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK });
-    const fallback = await recognizer.recognize(fallbackCardCrop(source));
-    return { label: normalizeCardLabel(fallback.data.text) };
-  }
+  if (!label || result.data.confidence < 45) return { label: '', textRegion: undefined };
   const words = result.data.blocks
     ?.flatMap((block) => block.paragraphs)
     .flatMap((paragraph) => paragraph.lines)

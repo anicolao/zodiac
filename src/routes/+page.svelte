@@ -22,6 +22,9 @@
     cardLabel: string;
     stars: DetectedStar[];
     textRegion?: RecognizedTextRegion;
+    cardCenter?: { x: number; y: number };
+    dieValue?: number;
+    cardWords?: string[];
     capturePlane?: CapturePlane;
     imageAspectRatio: number;
   }
@@ -223,6 +226,7 @@
       stars: pending.stars,
       cardRotationDegrees: pending.textRegion?.rotationDegrees,
       cardTextCenter: pending.textRegion?.center,
+      cardCenter: pending.cardCenter,
       capturePlane: pending.capturePlane,
       imageAspectRatio: pending.imageAspectRatio,
       acceptedAt: new Date().toISOString()
@@ -484,6 +488,14 @@
             data-testid="recognized-capture-plane"
             data-corners={JSON.stringify(pending.capturePlane.corners)}
           >Black play surface recognized for perspective correction</output>
+        {/if}
+        {#if pending.cardWords?.length}
+          <output
+            class="visually-hidden"
+            data-testid="recognized-card-choices"
+            data-words={JSON.stringify(pending.cardWords)}
+            data-die-value={pending.dieValue}
+          >Die {pending.dieValue ?? 'not read'} selects from {pending.cardWords.join(', ')}</output>
         {/if}
         <div class="token-summary" aria-label={`${pendingGold} gold and ${pendingRed} red stars`}>
           <span class="gold-ink">★ {pendingGold} gold</span><span class="red-ink">★ {pendingRed} red</span>
