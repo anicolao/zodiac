@@ -178,7 +178,8 @@ function locateCard(source: HTMLCanvasElement): CardLocation | undefined {
 
     const area = points.length;
     if (area < width * height * 0.005 || area > width * height * 0.14) continue;
-    if (minX <= 3 || minY <= 3 || maxX >= width - 4 || maxY >= height - 4) continue;
+    const borderTouches = Number(minX <= 3) + Number(minY <= 3) + Number(maxX >= width - 4) + Number(maxY >= height - 4);
+    if (borderTouches > 1) continue;
     const meanX = sumX / area;
     const meanY = sumY / area;
     const covarianceXX = sumXX / area - meanX * meanX;
@@ -223,7 +224,7 @@ function locateCard(source: HTMLCanvasElement): CardLocation | undefined {
       width: cardWidth * scale,
       height: cardHeight * scale,
       rotationDegrees: normalizeRotation(rotation * 180 / Math.PI),
-      score: area * fill
+      score: area * fill * (borderTouches ? 0.72 : 1)
     });
   }
   return candidates.sort((left, right) => right.score - left.score)[0];
