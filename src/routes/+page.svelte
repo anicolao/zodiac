@@ -410,7 +410,7 @@
         <div class="camera-message">
           <span>✦</span>
           <strong>Keep the printed card and every star in frame</strong>
-          <small>Token color, position, and size will be preserved.</small>
+          <small>Token color and constellation shape will be preserved.</small>
         </div>
       </div>
       {#if errorMessage}<p class="error" role="alert">{errorMessage}</p>{/if}
@@ -524,7 +524,7 @@
         <div class="gold-ink"><strong>{goldCount}</strong><span>gold stars</span></div>
         <div class="red-ink"><strong>{redCount}</strong><span>red stars</span></div>
       </div>
-      <p class="total-line">{goldCount + redCount} stars recorded with their original sizes</p>
+      <p class="total-line">{goldCount + redCount} stars normalized for a clear, consistent Zodiac</p>
       <ol class="capture-grid">
         {#each session.captures as capture}
           <li>

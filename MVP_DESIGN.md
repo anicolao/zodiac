@@ -8,7 +8,7 @@ Resolved constraints:
 
 - one supported game in the MVP;
 - exactly six captures per completed chart;
-- card names are read locally from the printed card in each photograph, not selected from a catalogue;
+- all six numbered words and the upward black-die value are read locally from each photograph; only the corresponding blue word becomes the label;
 - red and gold star tokens on a reasonably contrasting play surface;
 - an iPhone in portrait orientation as the primary device;
 - no server dependency after the app's initial load.
@@ -23,8 +23,8 @@ If the game rules differ, adjust the domain model before implementation rather t
 - start, resume, discard, and complete one active session;
 - a system camera/photo input that requests the rear camera where supported and permits photo-library fallback;
 - image orientation correction, downsampling, and metadata removal;
-- assisted detection of red and gold stars, including normalized position and physical size;
-- bundled, on-device OCR of the printed card name, with photograph-grounded correction when OCR is uncertain;
+- assisted detection of red and gold stars, including normalized position and capture-time size for confirmation;
+- bundled, on-device OCR of six blue card words and the black die's upward white number, with photograph-grounded correction when recognition is uncertain;
 - visual review and manual star add/remove/recolor correction;
 - capture reorder, retake, and delete;
 - deterministic six-sector Zodiac rendering;
@@ -174,7 +174,7 @@ Only one active capture session is retained. Completion atomically updates that 
 
 ### 6.2 Find the play region
 
-The capture guide encourages the card and tokens to occupy a predictable region, but analysis must use the captured frame rather than assume exact alignment. Begin with a generous region of interest above the card. A later refinement may detect the light card rectangle to establish scale and orientation.
+Analysis detects the light card, black play surface, and nearby black die across the complete frame. Their geometry establishes the canonical orientation: the card's long axis points down toward the constellation, so a rotated or upside-down photograph can be corrected before OCR and rendering.
 
 ### 6.3 Detect stars
 
@@ -190,7 +190,7 @@ For the known red and gold pieces:
 
 The first technical spike should compare a small purpose-built implementation with OpenCV.js. Prefer the smaller option if it meets fixture accuracy and runtime targets; do not commit a large computer-vision dependency by assumption.
 
-Card recognition locates the bright printed card in the lower photograph, crops its interior, increases text contrast, and runs bundled English Tesseract data entirely on device. The recognized uppercase name populates the review field. If recognition is uncertain, the user may correct the field only while the source photograph remains visible; the photograph is authoritative and there is no catalogue or filename-derived label.
+Card recognition locates the bright card and black play surface, then uses their relative positions and the card's long axis to rotate the scene into its canonical card-above-constellation orientation. It isolates dark-blue ink from the thin gold border and gold row numbers, runs bundled English Tesseract over all six rows, locates the nearby black die, and reads its upward white digit from 1–6. Only the corresponding blue word populates the review field. A missing card, incomplete six-row result, or unreadable die produces an empty field rather than guessed text. The user may correct the result only while the source photograph remains visible.
 
 ### 6.4 Review and correct
 
@@ -211,7 +211,7 @@ Render at a fixed 2048×2048 logical canvas:
 2. draw outer rings, six radial dividers, and ornament in warm gold;
 3. place sector labels along the ring in capture order;
 4. map each capture's normalized positions into a roomy outer band of its wedge, leaving the center visually open;
-5. draw restrained red/gold star glyphs using each token's normalized recorded size, clamped only to maintain legibility and sector spacing;
+5. uniformly expand each constellation to a shared safe span without changing its shape, then draw every gold star at one legible size and every red star at a second legible size;
 6. convert the canvas to a PNG blob.
 
 The same session data must always generate the same chart for a given renderer version. Keep the renderer version with the output record for reproducibility.
@@ -270,7 +270,7 @@ Create a `File` from the PNG blob, then call `navigator.canShare({ files: [file]
 
 ### Rendering and sharing
 
-- Six accepted captures produce a valid 2048×2048 PNG with six readable photo-derived labels and the confirmed star count, color distribution, relative positions, and visibly preserved token sizes.
+- Six accepted captures produce a valid 2048×2048 PNG with six readable die-selected labels, the confirmed star count and color distribution, uniformly expanded relative geometry, and consistent per-color star sizes.
 - Output is visually stable across current iPhone Safari/Home Screen mode and desktop reference browsers.
 - A supported iPhone opens the native share sheet with the PNG attached from one result-screen tap.
 - Unsupported file sharing exposes a working save/download fallback.

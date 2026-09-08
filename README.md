@@ -2,7 +2,7 @@
 
 Zodiac turns the end state of a tabletop game into a personal constellation chart: photograph each card and its stars during play, then export one square image that remembers the whole game.
 
-> **Status:** MVP implemented and verified. The first pull request is the review surface for application code, generated fixtures, tests, and product documentation.
+> **Status:** MVP implemented and under iterative field-photo review. Pull requests provide deployed review builds, fixtures, tests, and current product documentation.
 
 ![Reference Zodiac output](zodiac.png)
 
@@ -10,7 +10,7 @@ Zodiac turns the end state of a tabletop game into a personal constellation char
 
 1. Open Zodiac from an iPhone Home Screen and start a game.
 2. Photograph each of the six card-and-star arrangements.
-3. Confirm the card name and the stars Zodiac found; correct mistakes if needed.
+3. Zodiac rotates the scene so the card is above the constellation, reads its six numbered words and the black die, and places only the die-selected word in the confirmation field.
 4. Review the six captures and generate the chart.
 5. Share the resulting PNG through the iOS share sheet or save it.
 6. Reopen any completed game from local Game history and share it again later.
@@ -36,7 +36,7 @@ The proposed MVP is local-first. Photos, recognition results, and finished chart
 
 - SvelteKit rendered as a client-side SPA and deployed as static assets over HTTPS
 - TypeScript for domain and image-processing code
-- Local Tesseract OCR for reading the printed card name directly from each photograph
+- Local Tesseract OCR for reading all six blue card words plus the upward white die number, then selecting the corresponding word
 - Canvas 2D for metadata-stripping normalization, token detection, analysis overlays, and final 2048×2048 PNG rendering
 - IndexedDB for the active session, sanitized image blobs, and a local completed-game history
 - Web App Manifest plus a SvelteKit service worker for Home Screen/standalone presentation and offline app-shell caching
@@ -48,8 +48,8 @@ No backend, account, analytics, or photo upload is required for the MVP.
 ## Resolved MVP decisions
 
 - The MVP is for a six-card game and produces exactly six sectors.
-- Card names are read from the printed card in each photograph. A correction field remains beside the photograph only to fix OCR mistakes.
-- Token color, relative position, and physical size are recorded and reproduced.
+- Every card has six gold-numbered blue words; its black die chooses the sole word used as the sector label. A correction field remains beside the photograph only to fix recognition mistakes.
+- Token color and relative position are recorded. Constellations are uniformly expanded to a common sector span, with one consistent output size for every gold star and another for every red star.
 - The `zodiac.png` square art direction is approved.
 - Local-only processing is a requirement, including OCR and token detection. The app makes no photo or recognition request to a server.
 
@@ -72,6 +72,8 @@ npm run test:e2e
 The Playwright suite uses six AI-generated, photorealistic gameplay fixtures in `tests/e2e/fixtures/`. It performs a complete start-to-share-and-reshare run, validates the 2048×2048 output, completed-game history, reload recovery, phone/desktop presentation, manifest metadata, touch targets, and offline OCR. See [E2E_GUIDE.md](E2E_GUIDE.md) before changing UI or tests.
 
 Fourteen real iPhone photographs form the recognition regression corpus in `tests/fixtures/real/`. Run `npm run dev` and open `/fixtures` to review their editable text regions, card-defined north vectors, and token circles. The browser E2E suite processes every image and compares local recognition with those records. See [FIXTURE_GUIDE.md](FIXTURE_GUIDE.md) for the schema and review workflow.
+
+Twelve additional metadata-free iPhone fixtures in `tests/fixtures/issues/` cover the production six-word card, black-die selection, missing-card rejection, quarter-turn capture, exact upside-down capture, and a complete rotation-safe Zodiac.
 
 ## Deployment previews
 

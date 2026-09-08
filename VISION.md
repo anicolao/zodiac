@@ -6,7 +6,7 @@
 
 Zodiac makes a beautiful, truthful keepsake from a tabletop game without turning the game itself into screen time. Players take a few quick photographs as the table evolves. At the end, the app translates those moments into a single celestial chart that is immediately worth saving or sharing.
 
-The chart is not a score report or a generic AI illustration. Its names, colors, star positions, and token sizes come from the photographed physical game. Someone who played should recognize their game in it.
+The chart is not a score report or a generic AI illustration. Its names come from the photographed six-word card and die selection, while its colors and star arrangement come from the physical tokens. Someone who played should recognize their game in it.
 
 ## The opportunity
 
@@ -36,7 +36,7 @@ Zodiac should require seconds, not minutes, during play. The main capture action
 
 ### Truth before spectacle
 
-The generated chart must remain traceable to the photographs. Printed card names are read from the image; star color, position, and size are detected from the physical tokens; and the final art is rendered from confirmed structured data. No invented names or pieces.
+The generated chart must remain traceable to the photographs. All six blue card words and the upward die number are read from the image; the die-selected word becomes the label; star color and position come from the physical tokens; and the final art is rendered from confirmed structured data. No invented names or pieces.
 
 ### The result is the reward
 
@@ -74,14 +74,14 @@ Initial product targets for a moderated test of at least 20 completed games:
 - 90% of started six-photo sessions reach a generated chart;
 - median post-game review-to-share time is under two minutes;
 - at least 80% of participants save or share the result;
-- at least 80% rate the chart as an accurate representation of their card names and star colors, sizes, and relative arrangements;
+- at least 80% rate the chart as an accurate representation of their die-selected card words, star colors, and relative arrangements;
 - no image leaves the device except through an explicit user share action.
 
 These are learning targets, not launch claims.
 
 ## Deliberate boundaries
 
-The first release supports one six-card physical game, a six-sector chart, red and gold star pieces, printed card-name OCR, local completed-game history, and the approved visual theme. It does not determine winners, recognize people, maintain social profiles, publish a public gallery, sync across devices, or synthesize decorative imagery in the cloud.
+The first release supports one six-card physical game, a six-sector chart, red and gold star pieces, six-word numbered cards, black-die word selection, local completed-game history, and the approved visual theme. It does not determine winners, recognize people, maintain social profiles, publish a public gallery, sync across devices, or synthesize decorative imagery in the cloud.
 
 OCR for layouts beyond the supported card design, arbitrary component types, multiplayer synchronization, searchable/cloud-synced history, alternate themes, and print ordering may follow only after the core ritual is proven.
 
