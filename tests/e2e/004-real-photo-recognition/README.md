@@ -11,6 +11,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads BUG from the arbitrarily placed printed card
 - [x] The detector finds exactly 5 gold and 1 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -23,6 +24,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads DRAGON from the arbitrarily placed printed card
 - [x] The detector finds exactly 4 gold and 0 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -35,6 +37,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads SCALE from the arbitrarily placed printed card
 - [x] The detector finds exactly 5 gold and 1 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -47,6 +50,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads THEATRE from the arbitrarily placed printed card
 - [x] The detector finds exactly 5 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -59,6 +63,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads TRUNK from the arbitrarily placed printed card
 - [x] The detector finds exactly 3 gold and 1 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -71,6 +76,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads VILLAGE from the arbitrarily placed printed card
 - [x] The detector finds exactly 6 gold and 1 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -83,6 +89,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads CAKE from the arbitrarily placed printed card
 - [x] The detector finds exactly 3 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -95,6 +102,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads CAVE from the arbitrarily placed printed card
 - [x] The detector finds exactly 5 gold and 0 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -107,6 +115,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads FIRE from the arbitrarily placed printed card
 - [x] The detector finds exactly 4 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -119,6 +128,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads CENTIPEDE from the arbitrarily placed printed card
 - [x] The detector finds exactly 5 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -131,6 +141,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads ACCORDION from the arbitrarily placed printed card
 - [x] The detector finds exactly 5 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -143,6 +154,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads PARTY from the arbitrarily placed printed card
 - [x] The detector finds exactly 3 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -155,6 +167,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads FAN from the arbitrarily placed printed card
 - [x] The detector finds exactly 3 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -167,5 +180,6 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] OCR reads TREASURE from the arbitrarily placed printed card
 - [x] The detector finds exactly 6 gold and 1 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
+- [x] Every confirmation marker is centred on its detected image coordinate
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device

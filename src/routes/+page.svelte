@@ -441,22 +441,24 @@
         <span class="counter">{(session?.captures.length ?? 0) + 1}/6</span>
       </header>
       <div class="photo-review">
-        <img src={pending.preview} alt="Captured card and star tokens" />
-        <div class="star-region" aria-label="Detected stars">
-          {#each pending.stars as star (star.id)}
-            <button
-              class:gold={star.color === 'gold'}
-              class:red={star.color === 'red'}
-              class="detected-star"
-              style={`left:${star.x * 100}%;top:${star.y * 100}%;width:${Math.max(26, star.size * 260)}px;height:${Math.max(26, star.size * 260)}px`}
-              data-star-x={star.x}
-              data-star-y={star.y}
-              data-star-size={star.size}
-              aria-label={`${star.color} star, tap to change color`}
-              title="Tap to change color"
-              onclick={() => toggleStar(star.id)}
-            >★</button>
-          {/each}
+        <div class="photo-frame" style={`--photo-aspect:${pending.imageAspectRatio}`}>
+          <img src={pending.preview} alt="Captured card and star tokens" />
+          <div class="star-region" aria-label="Detected stars">
+            {#each pending.stars as star (star.id)}
+              <button
+                class:gold={star.color === 'gold'}
+                class:red={star.color === 'red'}
+                class="detected-star"
+                style={`left:${star.x * 100}%;top:${star.y * 100}%;width:${Math.max(26, star.size * 260)}px;height:${Math.max(26, star.size * 260)}px`}
+                data-star-x={star.x}
+                data-star-y={star.y}
+                data-star-size={star.size}
+                aria-label={`${star.color} star, tap to change color`}
+                title="Tap to change color"
+                onclick={() => toggleStar(star.id)}
+              >★</button>
+            {/each}
+          </div>
         </div>
       </div>
       <div class="confirm-card">
@@ -616,8 +618,9 @@
   .center-panel h1 { font-size:2.25rem; } .center-panel p { color:#d7deea; } .center-panel small { color:#9eacbb; }
   .spinner { color:#f3b83f; font-size:3rem; animation:pulse 1.3s ease-in-out infinite; }
   .mapping { display:flex; gap:24px; height:90px; align-items:center; color:#f3b83f; } .mapping span:nth-child(2) { color:#d83b2d; font-size:2rem; }
-  .photo-review { position:relative; overflow:hidden; min-height:0; flex:1; border-radius:20px; background:#08121c; }
-  .photo-review img { display:block; width:100%; height:100%; max-height:49dvh; object-fit:contain; }
+  .photo-review { display:grid; overflow:hidden; min-height:0; flex:1; place-items:center; border-radius:20px; background:#08121c; }
+  .photo-frame { --photo-max-height:49dvh; position:relative; width:min(100%,calc(var(--photo-max-height) * var(--photo-aspect))); max-height:var(--photo-max-height); aspect-ratio:var(--photo-aspect); }
+  .photo-review img { display:block; width:100%; height:100%; }
   .star-region { position:absolute; inset:0; pointer-events:none; }
   .detected-star { position:absolute; display:grid; place-items:center; min-width:44px; min-height:44px; transform:translate(-50%,-50%); border:2px solid currentColor; border-radius:50%; background:#061426b8; pointer-events:auto; font-size:1rem; cursor:pointer; }
   .detected-star.gold { color:#ffd154; } .detected-star.red { color:#ef5749; }
@@ -660,7 +663,7 @@
   .build-status { position:relative; z-index:2; display:flex; min-height:30px; align-items:center; justify-content:center; gap:6px; color:#91a2b5; font-size:.64rem; letter-spacing:.04em; }
   .build-update { min-height:44px; padding:4px 8px; border:0; background:transparent; color:#f7c451; font-size:.7rem; font-weight:800; text-decoration:underline; cursor:pointer; }
   @keyframes pulse { 50% { opacity:.52; transform:scale(.98); } }
-  @media (max-height: 760px) { main { padding-top:max(12px,env(safe-area-inset-top)); padding-bottom:max(12px,env(safe-area-inset-bottom)); } .welcome { gap:14px; } .chart-preview { width:min(45vw,210px); } .camera-placeholder { min-height:330px; } .photo-review img { max-height:38dvh; } .capture-grid li { min-height:62px; } .capture-grid img { height:62px; } }
+  @media (max-height: 760px) { main { padding-top:max(12px,env(safe-area-inset-top)); padding-bottom:max(12px,env(safe-area-inset-bottom)); } .welcome { gap:14px; } .chart-preview { width:min(45vw,210px); } .camera-placeholder { min-height:330px; } .photo-frame { --photo-max-height:38dvh; } .capture-grid li { min-height:62px; } .capture-grid img { height:62px; } }
   @media (min-width: 760px) { main { margin:24px auto; min-height:calc(100dvh - 48px); border:1px solid #f3b83f44; border-radius:32px; box-shadow:0 30px 90px #0009; } section { min-height:calc(100dvh - 126px); } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
 </style>
