@@ -9,7 +9,11 @@ const buildInfoPath = `${appRoot}build.json`;
 const assets = [...build, ...files, appRoot];
 
 worker.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(cacheName).then((cache) => cache.addAll(assets)));
+  event.waitUntil(
+    caches.open(cacheName)
+      .then((cache) => cache.addAll(assets))
+      .then(() => worker.skipWaiting())
+  );
 });
 
 worker.addEventListener('activate', (event) => {
@@ -47,6 +51,24 @@ worker.addEventListener('fetch', (event) => {
     );
     return;
   }
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' })
+        .then(async (response) => {
+          if (response.ok) {
+            const cache = await caches.open(cacheName);
+            await cache.put(appRoot, response.clone());
+          }
+          return response;
+        })
+        .catch(async (error) => {
+          const fallback = await caches.match(appRoot);
+          if (fallback) return fallback;
+          throw error;
+        })
+    );
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then(async (cached) => {
       if (cached) return cached;
@@ -58,8 +80,6 @@ worker.addEventListener('fetch', (event) => {
         }
         return response;
       } catch (error) {
-        const fallback = await caches.match(appRoot);
-        if (fallback && event.request.mode === 'navigate') return fallback;
         throw error;
       }
     })

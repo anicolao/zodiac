@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { analyzePhotograph } from '$lib/analyze';
-  import { BUILD_HASH, fetchDeployedBuild, isDifferentBuild, shortBuildHash } from '$lib/build';
+  import { BUILD_HASH, buildRefreshUrl, fetchDeployedBuild, isDifferentBuild, shortBuildHash } from '$lib/build';
   import {
     clearSession,
     loadHistory,
@@ -52,9 +52,15 @@
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') void checkBuildFreshness();
     };
+    const handleControllerChange = () => {
+      if (canRefreshBuild && deployedBuildHash && isDifferentBuild(deployedBuildHash)) {
+        location.replace(buildRefreshUrl(location.href, deployedBuildHash));
+      }
+    };
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     document.addEventListener('visibilitychange', handleVisibility);
+    navigator.serviceWorker?.addEventListener('controllerchange', handleControllerChange);
     const buildCheckTimer = window.setInterval(() => void checkBuildFreshness(), 5 * 60 * 1000);
     void checkBuildFreshness();
 
@@ -83,6 +89,7 @@
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       document.removeEventListener('visibilitychange', handleVisibility);
+      navigator.serviceWorker?.removeEventListener('controllerchange', handleControllerChange);
       window.clearInterval(buildCheckTimer);
       Object.values(previews).forEach(URL.revokeObjectURL);
       Object.values(historyPreviews).forEach(URL.revokeObjectURL);
@@ -120,9 +127,7 @@
         registration?.waiting?.postMessage({ type: 'ACTIVATE_UPDATE' });
       } catch {}
     }
-    const target = new URL(location.href);
-    target.searchParams.set('build', shortBuildHash(deployedBuildHash));
-    location.replace(target);
+    location.replace(buildRefreshUrl(location.href, deployedBuildHash));
   }
 
   function hydratePreviews(value: GameSession) {

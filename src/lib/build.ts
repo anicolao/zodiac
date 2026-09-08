@@ -16,6 +16,12 @@ export function isDifferentBuild(deployedHash: string, currentHash = BUILD_HASH)
   return Boolean(deployed && current && deployed !== 'development' && current !== 'development' && deployed !== current);
 }
 
+export function buildRefreshUrl(href: string, deployedHash: string): string {
+  const target = new URL(href);
+  target.searchParams.set('build', shortBuildHash(deployedHash));
+  return target.href;
+}
+
 function buildInfoUrl(now = Date.now()): URL {
   const manifestHref = document.querySelector<HTMLLinkElement>('link[rel="manifest"]')?.href;
   const url = new URL('build.json', new URL('.', manifestHref ?? location.href));
