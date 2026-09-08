@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isDifferentBuild, shortBuildHash } from '../../src/lib/build';
+import { buildRefreshUrl, isDifferentBuild, shortBuildHash } from '../../src/lib/build';
 
 describe('build freshness', () => {
   it('shows a stable short hash while comparing the complete revision', () => {
@@ -12,5 +12,11 @@ describe('build freshness', () => {
     expect(shortBuildHash('development')).toBe('development');
     expect(isDifferentBuild('abcdef12', 'development')).toBe(false);
     expect(isDifferentBuild('development', 'abcdef12')).toBe(false);
+  });
+
+  it('produces a cache-busting URL for the deployed revision', () => {
+    expect(buildRefreshUrl('https://example.test/zodiac/?old=value#result', '1234567890abcdef')).toBe(
+      'https://example.test/zodiac/?old=value&build=12345678#result'
+    );
   });
 });
