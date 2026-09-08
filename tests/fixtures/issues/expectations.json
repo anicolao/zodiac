@@ -1,0 +1,14 @@
+[
+  { "file": "img_0957.jpg", "words": ["BARK", "PHOENIX", "TELESCOPE", "MARSH", "CHARIOT", "MANTIS"], "die": 2, "selected": "PHOENIX", "gold": 7, "red": 1 },
+  { "file": "img_0958.jpg", "words": ["WITCH", "TRAIN", "PARADE", "SPRING", "TREASURE", "CAKE"], "die": 6, "selected": "CAKE", "gold": 7, "red": 1 },
+  { "file": "img_0959.jpg", "words": ["OCTOPUS", "JELLYFISH", "SEAL", "VILLAGE", "WEDDING", "TOOL"], "die": 4, "selected": "VILLAGE", "gold": 7, "red": 1 },
+  { "file": "img_0960.jpg", "words": ["WELL", "VAMPIRE", "CENTAUR", "MEADOW", "HARP", "CRAB"], "die": 1, "selected": "WELL", "gold": 6, "red": 2 },
+  { "file": "img_0961.jpg", "words": ["GHOST", "PIRATE", "HARBOR", "MERMAID", "MONSTER", "JUNGLE"], "die": 5, "selected": "MONSTER", "gold": 6, "red": 2 },
+  { "file": "img_0962.jpg", "words": ["THEATRE", "ALIEN", "JAM", "BEACH", "PLANE", "MOLE"], "die": 3, "selected": "JAM", "gold": 6, "red": 2 },
+  { "file": "img_0963.jpg", "words": ["ROCK", "TRUNK", "PITCHER", "FOUNTAIN", "MARKET", "PARTY"], "die": 3, "selected": "PITCHER", "gold": 5, "red": 0 },
+  { "file": "img_0964.jpg", "words": ["PORCUPINE", "ORGAN", "BRIDGE", "GLASSES", "RAY", "RUINS"], "die": 6, "selected": "RUINS", "gold": 5, "red": 0 },
+  { "file": "img_0965.jpg", "words": ["FAN", "FIRE", "FAIR", "COURT", "BOW", "CRANE"], "die": 6, "selected": "CRANE", "gold": 5, "red": 0 },
+  { "file": "img_0966.jpg", "words": ["FAN", "FIRE", "FAIR", "COURT", "BOW", "CRANE"], "die": 6, "selected": "CRANE", "gold": 5, "red": 0 },
+  { "file": "img_0967.jpg", "words": ["FACTORY", "BANK", "FARM", "MUSEUM", "CAVE", "KINGDOM"], "die": 2, "selected": "BANK", "gold": 5, "red": 0 },
+  { "file": "img_0968.jpg", "words": ["MASK", "WAVE", "CANYON", "PEACOCK", "LOBSTER", "JUGGLER"], "die": 2, "selected": "WAVE", "gold": 5, "red": 2 }
+]
