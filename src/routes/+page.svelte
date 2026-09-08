@@ -423,7 +423,7 @@
         <label class="shutter" for="photo-input" aria-label={`Take photo for constellation ${(session?.captures.length ?? 0) + 1} of 6`}>
           <span></span>
         </label>
-        <p>Take or choose photo</p>
+        <p>Take photo</p>
       </div>
     </section>
   {:else if stage === 'processing'}

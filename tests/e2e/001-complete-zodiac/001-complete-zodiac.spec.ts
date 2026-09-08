@@ -57,6 +57,7 @@ test('a complete six-card game becomes a shareable Zodiac', async ({ page }, tes
   });
 
   await page.getByRole('button', { name: 'Start a game' }).click();
+  await expect(page.getByText('Take photo', { exact: true })).toBeVisible();
   for (let index = 0; index < fixtures.length; index += 1) {
     const fixture = fixtures[index];
     await expect(page.getByRole('heading', { name: 'Capture the table' })).toBeVisible();
