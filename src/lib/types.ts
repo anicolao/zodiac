@@ -1,5 +1,14 @@
 export type StarColor = 'gold' | 'red';
 
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export interface CapturePlane {
+  corners: [Point, Point, Point, Point];
+}
+
 export interface DetectedStar {
   id: string;
   color: StarColor;
@@ -15,6 +24,8 @@ export interface Capture {
   image: Blob;
   stars: DetectedStar[];
   cardRotationDegrees?: number;
+  cardTextCenter?: Point;
+  capturePlane?: CapturePlane;
   imageAspectRatio?: number;
   acceptedAt: string;
 }

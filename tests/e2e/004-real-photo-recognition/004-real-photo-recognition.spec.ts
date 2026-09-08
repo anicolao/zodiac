@@ -126,6 +126,16 @@ test('the reviewed real photographs are recognized locally', async ({ page }, te
         { spec: 'Every confirmation marker is centred on its detected image coordinate', check: async () => {
           expect(overlayError).toBeLessThanOrEqual(1);
         } },
+        { spec: 'The black play surface supplies four corners for perspective correction', check: async () => {
+          const corners = JSON.parse(await page.getByTestId('recognized-capture-plane').getAttribute('data-corners') ?? '[]') as Point[];
+          expect(corners).toHaveLength(4);
+          expect(corners.every(({ x, y }) => x >= 0 && x <= 1 && y >= 0 && y <= 1)).toBe(true);
+          const minimumX = Math.min(...corners.map(({ x }) => x)) - 0.03;
+          const maximumX = Math.max(...corners.map(({ x }) => x)) + 0.03;
+          const minimumY = Math.min(...corners.map(({ y }) => y)) - 0.03;
+          const maximumY = Math.max(...corners.map(({ y }) => y)) + 0.03;
+          expect(actualStars.every(({ x, y }) => x >= minimumX && x <= maximumX && y >= minimumY && y <= maximumY)).toBe(true);
+        } },
         { spec: 'The text location and card-defined north match the reviewed annotation', check: async () => {
           expect(Math.hypot(
             textRegion.center.x - fixture.expected.textRegion.center.x,

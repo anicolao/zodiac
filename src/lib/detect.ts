@@ -1,4 +1,4 @@
-import type { DetectedStar, StarColor } from './types';
+import type { CapturePlane, DetectedStar, Point, StarColor } from './types';
 
 interface RGB {
   r: number;
@@ -63,9 +63,20 @@ function closeMask(mask: Uint8Array, width: number, height: number): Uint8Array 
   return closed;
 }
 
-function components(mask: Uint8Array, width: number, height: number) {
+interface Component {
+  area: number;
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  sumX: number;
+  sumY: number;
+  corners: [Point, Point, Point, Point];
+}
+
+function components(mask: Uint8Array, width: number, height: number): Component[] {
   const visited = new Uint8Array(mask.length);
-  const found: Array<{ area: number; minX: number; maxX: number; minY: number; maxY: number; sumX: number; sumY: number }> = [];
+  const found: Component[] = [];
   const queue: number[] = [];
   for (let start = 0; start < mask.length; start += 1) {
     if (!mask[start] || visited[start]) continue;
@@ -79,6 +90,10 @@ function components(mask: Uint8Array, width: number, height: number) {
     let maxY = 0;
     let sumX = 0;
     let sumY = 0;
+    let topLeft = { x: width, y: height };
+    let topRight = { x: 0, y: height };
+    let bottomRight = { x: 0, y: 0 };
+    let bottomLeft = { x: width, y: 0 };
     for (let cursor = 0; cursor < queue.length; cursor += 1) {
       const index = queue[cursor];
       const x = index % width;
@@ -90,6 +105,10 @@ function components(mask: Uint8Array, width: number, height: number) {
       maxX = Math.max(maxX, x);
       minY = Math.min(minY, y);
       maxY = Math.max(maxY, y);
+      if (x + y < topLeft.x + topLeft.y) topLeft = { x, y };
+      if (x - y > topRight.x - topRight.y) topRight = { x, y };
+      if (x + y > bottomRight.x + bottomRight.y) bottomRight = { x, y };
+      if (x - y < bottomLeft.x - bottomLeft.y) bottomLeft = { x, y };
       const neighbors = [index - 1, index + 1, index - width, index + width];
       for (const neighbor of neighbors) {
         if (neighbor < 0 || neighbor >= mask.length || visited[neighbor] || !mask[neighbor]) continue;
@@ -99,19 +118,49 @@ function components(mask: Uint8Array, width: number, height: number) {
         queue.push(neighbor);
       }
     }
-    found.push({ area, minX, maxX, minY, maxY, sumX, sumY });
+    found.push({ area, minX, maxX, minY, maxY, sumX, sumY, corners: [topLeft, topRight, bottomRight, bottomLeft] });
   }
   return found;
 }
 
-export function detectStars(source: HTMLCanvasElement): DetectedStar[] {
+function detectCapturePlane(pixels: Uint8ClampedArray, width: number, height: number): CapturePlane | undefined {
+  const dark = new Uint8Array(width * height);
+  for (let index = 0; index < dark.length; index += 1) {
+    const r = pixels[index * 4];
+    const g = pixels[index * 4 + 1];
+    const b = pixels[index * 4 + 2];
+    if (0.2126 * r + 0.7152 * g + 0.0722 * b < 45 && Math.max(r, g, b) < 72) dark[index] = 1;
+  }
+  const candidates = components(closeMask(dark, width, height), width, height)
+    .filter((component) =>
+      component.area > width * height * 0.08 &&
+      component.maxX - component.minX > width * 0.24 &&
+      component.maxY - component.minY > height * 0.18
+    )
+    .sort((left, right) => right.area - left.area);
+  const surface = candidates[0];
+  if (!surface) return undefined;
+  const corners = surface.corners.map(({ x, y }) => ({ x: x / width, y: y / height })) as CapturePlane['corners'];
+  const area = corners.reduce((sum, point, index) => {
+    const next = corners[(index + 1) % corners.length];
+    return sum + point.x * next.y - next.x * point.y;
+  }, 0) / 2;
+  return Math.abs(area) >= 0.06 ? { corners } : undefined;
+}
+
+export interface DetectionResult {
+  stars: DetectedStar[];
+  capturePlane?: CapturePlane;
+}
+
+export function detectConstellation(source: HTMLCanvasElement): DetectionResult {
   const analysisWidth = 420;
   const analysisHeight = Math.round((source.height / source.width) * analysisWidth);
   const canvas = document.createElement('canvas');
   canvas.width = analysisWidth;
   canvas.height = analysisHeight;
   const context = canvas.getContext('2d', { willReadFrequently: true });
-  if (!context) return [];
+  if (!context) return { stars: [] };
   context.drawImage(source, 0, 0, source.width, source.height, 0, 0, analysisWidth, analysisHeight);
   const pixels = context.getImageData(0, 0, analysisWidth, analysisHeight).data;
   const masks: Record<StarColor, Uint8Array> = {
@@ -158,5 +207,12 @@ export function detectStars(source: HTMLCanvasElement): DetectedStar[] {
       });
     }
   }
-  return stars.sort((left, right) => left.y - right.y || left.x - right.x);
+  return {
+    stars: stars.sort((left, right) => left.y - right.y || left.x - right.x),
+    capturePlane: detectCapturePlane(pixels, analysisWidth, analysisHeight)
+  };
+}
+
+export function detectStars(source: HTMLCanvasElement): DetectedStar[] {
+  return detectConstellation(source).stars;
 }

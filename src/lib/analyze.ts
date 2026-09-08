@@ -1,10 +1,10 @@
-import { detectStars } from './detect';
+import { detectConstellation } from './detect';
 import { normalizeImage } from './image';
 import { recognizeCard, type RecognizedTextRegion } from './ocr';
 
 export async function analyzePhotograph(file: Blob) {
   const normalized = await normalizeImage(file);
-  const stars = detectStars(normalized.canvas);
+  const detection = detectConstellation(normalized.canvas);
   let cardLabel = '';
   let textRegion: RecognizedTextRegion | undefined;
   try {
@@ -17,7 +17,8 @@ export async function analyzePhotograph(file: Blob) {
   return {
     image: normalized.blob,
     imageAspectRatio: normalized.canvas.width / normalized.canvas.height,
-    stars,
+    stars: detection.stars,
+    capturePlane: detection.capturePlane,
     cardLabel,
     textRegion
   };

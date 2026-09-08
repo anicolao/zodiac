@@ -12,7 +12,7 @@
   } from '$lib/persistence';
   import { renderZodiac } from '$lib/render';
   import { saveZodiac, shareZodiac } from '$lib/share';
-  import { newSession, type DetectedStar, type GameHistoryEntry, type GameSession } from '$lib/types';
+  import { newSession, type CapturePlane, type DetectedStar, type GameHistoryEntry, type GameSession } from '$lib/types';
   import type { RecognizedTextRegion } from '$lib/ocr';
 
   type Stage = 'loading' | 'welcome' | 'capture' | 'processing' | 'confirm' | 'review' | 'generating' | 'result' | 'history' | 'history-result';
@@ -22,6 +22,7 @@
     cardLabel: string;
     stars: DetectedStar[];
     textRegion?: RecognizedTextRegion;
+    capturePlane?: CapturePlane;
     imageAspectRatio: number;
   }
   type BuildFreshness = 'checking' | 'current' | 'available' | 'offline' | 'unknown' | 'refreshing';
@@ -221,6 +222,8 @@
       image: pending.image,
       stars: pending.stars,
       cardRotationDegrees: pending.textRegion?.rotationDegrees,
+      cardTextCenter: pending.textRegion?.center,
+      capturePlane: pending.capturePlane,
       imageAspectRatio: pending.imageAspectRatio,
       acceptedAt: new Date().toISOString()
     };
@@ -474,6 +477,13 @@
             data-height={pending.textRegion.height}
             data-rotation-degrees={pending.textRegion.rotationDegrees}
           >Text direction {pending.textRegion.rotationDegrees.toFixed(1)} degrees</output>
+        {/if}
+        {#if pending.capturePlane}
+          <output
+            class="visually-hidden"
+            data-testid="recognized-capture-plane"
+            data-corners={JSON.stringify(pending.capturePlane.corners)}
+          >Black play surface recognized for perspective correction</output>
         {/if}
         <div class="token-summary" aria-label={`${pendingGold} gold and ${pendingRed} red stars`}>
           <span class="gold-ink">★ {pendingGold} gold</span><span class="red-ink">★ {pendingRed} red</span>

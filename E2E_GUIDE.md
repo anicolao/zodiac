@@ -25,7 +25,9 @@ tests/e2e/
 │   └── screenshots/                  committed visual baselines
 ├── 002-responsive-pwa/
 ├── 003-offline-capture/
-└── 004-real-photo-recognition/
+├── 004-real-photo-recognition/
+├── 005-clipped-card-ocr/
+└── 006-real-photo-zodiac/
 ```
 
 `README.md` and screenshot numbering are produced by the scenario. Do not hand-maintain them.
@@ -81,7 +83,7 @@ Never manually manage counters, screenshot names, or duplicate verification pros
 - update action that navigates to an application-generated cache-busting build URL;
 - service-worker offline reload followed by uncached-in-memory OCR of a fixture.
 
-The generated photographs above remain end-to-end product-flow fixtures. The separately reviewed real-photo corpus under `tests/fixtures/real/` is also executable acceptance data: scenario 004 uploads all 14 JPEGs and checks OCR, token count/color/position/size, text location, card-defined north, and local-only networking against their JSON records. See `FIXTURE_GUIDE.md`.
+The generated photographs above remain end-to-end product-flow fixtures. The separately reviewed real-photo corpus under `tests/fixtures/real/` is also executable acceptance data: scenario 004 uploads all 14 JPEGs and checks OCR, token count/color/position/size, overlay alignment, play-surface detection, text location, card-defined north, and local-only networking against their JSON records. Scenario 005 proves a slightly clipped card remains readable. Scenario 006 completes a six-capture game with angled real photos and checks that every accepted capture carries the four-corner perspective reference used by the geometry-preserving renderer. See `FIXTURE_GUIDE.md`.
 
 ## 7. Commands
 
