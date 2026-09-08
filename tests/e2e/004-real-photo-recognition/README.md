@@ -12,6 +12,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 5 gold and 1 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -25,6 +26,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 4 gold and 0 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -38,6 +40,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 5 gold and 1 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -51,6 +54,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 5 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -64,6 +68,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 3 gold and 1 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -77,6 +82,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 6 gold and 1 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -90,6 +96,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 3 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -103,6 +110,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 5 gold and 0 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -116,6 +124,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 4 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -129,6 +138,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 5 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -142,6 +152,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 5 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -155,6 +166,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 3 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -168,6 +180,7 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 3 gold and 2 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
 
@@ -181,5 +194,6 @@ Every reviewed gameplay photograph is processed through the same local browser p
 - [x] The detector finds exactly 6 gold and 1 red tokens
 - [x] Every token center and physical radius matches the reviewed annotation
 - [x] Every confirmation marker is centred on its detected image coordinate
+- [x] The black play surface supplies four corners for perspective correction
 - [x] The text location and card-defined north match the reviewed annotation
 - [x] Recognition sends no photograph or derived data off device
