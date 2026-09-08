@@ -23,3 +23,15 @@ Let's put this branch up as a PR
 Read Gmail - Zodiac prototype.pdf and summarize its feedback as GMAIL_FEEDBACK.md for review before implementing.
 
 OK let's put up a PR that fixes all these points in focused commits.
+
+OK I put the photos that go with these issues in issue_photos. Looks liek the current roiund both works poorly and doesn't handle some new requirements. update the PR accordingly. Issue list: Issue: There are now 6 words per card. Cards always have a thin gold border, and gold numbers (1-6, corresponding to the 6 words), with dark blue text for the actual words themselves. The card will always be above the constellation, oriented upright. The photo might be taken rotated, or even upside down, but make sure it's properly rotated with the card above the constellation before running the OCR. Then run OCR on the 6 words and their corresponding numbers (1-6). There will always be a black die with a white number in the picture, and the number on the die shows which of the words should be displayed in the text field. For example, if the die shows the number "2", then the word to be recognized is the one labelled with the gold "2". Do not put the gold number into the text field - only use the blue text - and only use the one word corresponding to the die.
+ Photos-1-001 (1).zip
+
+Issue: If no card is detected, the OCR usually gives gibberish
+It should show no text in the text box, instead of gibberish. Maybe the confidence threshold needs to be adjusted.
+
+Issue: Sometimes the constellation is squished together in the zodiac, and the stars are too small.
+The stars should always be the same size in the zodiac, and the shape should always expand to fill the available space in the zodiac section it's in (with reasonable space around the edge so it doesn't look too crowded). The important thing is making sure every constellation in the zodiac looks around the same size, and with yellow stars the same size as other yellow stars, and red stars the same size as other red stars.
+
+Issue: If the picture is taken rotated (i.e. the text is not upright and the constellation is rotated), sometimes the constellation appears too small in the zodiac, and with the incorrect rotation. Also, if the picture is taken exactly upside down, the OCR does not rotate the text, it just recognizes the text wrong.
+It should always assume the card is positioned above the constellation, and rotate the text, and constellation, for that orientation.
