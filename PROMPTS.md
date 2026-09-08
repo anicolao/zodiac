@@ -19,3 +19,7 @@ OK I hvae updated the fixtures. Do we have tests that validate recognition handl
 fix the files, the editor, add the real test, and then make it green.
 
 Let's put this branch up as a PR
+
+Read Gmail - Zodiac prototype.pdf and summarize its feedback as GMAIL_FEEDBACK.md for review before implementing.
+
+OK let's put up a PR that fixes all these points in focused commits.
