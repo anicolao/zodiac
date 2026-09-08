@@ -234,9 +234,9 @@ function locateCard(source: HTMLCanvasElement): CardLocation | undefined {
   return candidates.sort((left, right) => right.score - left.score)[0];
 }
 
-function fallbackCardCrop(source: HTMLCanvasElement): HTMLCanvasElement {
+function fallbackCardCrop(source: HTMLCanvasElement, located?: AxisAlignedCard): HTMLCanvasElement {
   const crop = document.createElement('canvas');
-  const card = locateAxisAlignedCard(source) ?? {
+  const card = located ?? locateAxisAlignedCard(source) ?? {
     x: source.width * 0.12,
     y: source.height * 0.58,
     width: source.width * 0.76,
@@ -595,12 +595,29 @@ async function recognizeListCard(source: HTMLCanvasElement, card: CardLocation, 
 
 export async function recognizeCard(source: HTMLCanvasElement, plane?: CapturePlane): Promise<RecognizedCard> {
   const card = locateCard(source);
-  if (!card) return { label: '' };
+  if (!card) {
+    const axisAligned = locateAxisAlignedCard(source);
+    if (!axisAligned) return { label: '' };
+    const recognizer = await worker();
+    await recognizer.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK });
+    const result = await recognizer.recognize(fallbackCardCrop(source, axisAligned));
+    return { label: normalizeCardLabel(result.data.text) };
+  }
   if (plane) {
     const orientation = listCardOrientation(source, card, plane);
-    if (orientation.alignment >= 0.62) return recognizeListCard(source, card, plane, orientation);
+    if (orientation.alignment >= 0.62) {
+      const listCard = await recognizeListCard(source, card, plane, orientation);
+      if (listCard.words?.length === 6 || listCard.dieValue) return listCard;
+    }
   }
-  if (card.width / source.width > 0.42) return { label: '' };
+  if (card.width / source.width > 0.42) {
+    const axisAligned = locateAxisAlignedCard(source);
+    if (!axisAligned) return { label: '' };
+    const recognizer = await worker();
+    await recognizer.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK });
+    const result = await recognizer.recognize(fallbackCardCrop(source, axisAligned));
+    return { label: normalizeCardLabel(result.data.text) };
+  }
   const aligned = alignedCardCrop(source, card);
   if (!aligned) return { label: '', textRegion: undefined };
   const recognizer = await worker();
@@ -626,7 +643,13 @@ export async function recognizeCard(source: HTMLCanvasElement, plane?: CapturePl
     .sort((left, right) => right.result.data.confidence - left.result.data.confidence)[0] ?? attempts[0];
   if (!chosen) return { label: '', textRegion: undefined };
   const { cropped, result, label } = chosen;
-  if (!label || result.data.confidence < 45) return { label: '', textRegion: undefined };
+  if (!label) {
+    const axisAligned = locateAxisAlignedCard(source);
+    if (!axisAligned) return { label: '', textRegion: undefined };
+    await recognizer.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK });
+    const fallback = await recognizer.recognize(fallbackCardCrop(source, axisAligned));
+    return { label: normalizeCardLabel(fallback.data.text) };
+  }
   const words = result.data.blocks
     ?.flatMap((block) => block.paragraphs)
     .flatMap((paragraph) => paragraph.lines)
